@@ -18,6 +18,23 @@
    - ndots value: {{ .Values.ndots.value }}
    - Annotation key: {{ .Values.ndots.annotationKey }}
    - Annotation mode: {{ .Values.ndots.annotationMode }}
+   - DNS strategy: {{ .Values.dns.strategy }}
+   {{- if .Values.dns.policy }}
+   - DNS policy: {{ .Values.dns.policy }}
+   {{- end }}
+   {{- if .Values.dns.nameservers }}
+   - DNS nameservers: {{ .Values.dns.nameservers | join ", " }}
+   {{- end }}
+   {{- if .Values.dns.searches }}
+   - DNS searches: {{ .Values.dns.searches | join ", " }}
+   {{- end }}
+   - DNS spec annotation: {{ .Values.dns.annotationKey }}
+   - DNS strategy annotation: {{ .Values.dns.strategyAnnotationKey }}
+
+   Per-pod override: attach a full DNS spec (JSON or YAML) via the
+   "{{ .Values.dns.annotationKey }}" annotation to overlay these defaults,
+   or "{{ .Values.dns.strategyAnnotationKey }}" to change the strategy for a
+   single pod.
 
 3. Excluded namespaces: {{ .Values.namespace.exclude | join ", " }}
 

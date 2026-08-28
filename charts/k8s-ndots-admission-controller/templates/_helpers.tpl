@@ -98,3 +98,19 @@ Create the issuer name
 {{- end }}
 {{- end }}
 
+{{/*
+Render dns.options as a DNS_OPTIONS CSV: "name=value,flag,name2=value2".
+Options without a value render as just the name (flags like edns0).
+*/}}
+{{- define "k8s-ndots-admission-controller.dnsOptionsCSV" -}}
+{{- $pairs := list -}}
+{{- range .Values.dns.options -}}
+{{- if .value -}}
+{{- $pairs = append $pairs (printf "%s=%v" .name .value) -}}
+{{- else -}}
+{{- $pairs = append $pairs (printf "%s" .name) -}}
+{{- end -}}
+{{- end -}}
+{{- join "," $pairs -}}
+{{- end }}
+

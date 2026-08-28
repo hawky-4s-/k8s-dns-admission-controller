@@ -31,6 +31,41 @@ ndots:
   # Mode: "always", "opt-in", or "opt-out"
   annotationMode: "opt-out"
 
+# Full DNS settings management (in addition to ndots).
+#
+# The webhook seeds an "ndots" option from ndots.value above; dns.* lets you
+# manage every other pod DNS field. The strategy controls how managed values
+# combine with what the pod already declares:
+#   merge    - add/update managed keys, leave the pod's other DNS settings
+#              (union for nameservers/searches). Default; matches legacy ndots.
+#   update   - only change a field/option that is already present on the pod.
+#   unset    - remove the managed options/fields from the pod.
+#   override - replace the whole managed field with the configured value.
+dns:
+  # Default strategy: merge, update, unset, or override.
+  strategy: "merge"
+  # Top-level pod dnsPolicy: "" (leave unmanaged), None, ClusterFirst,
+  # ClusterFirstWithHostNet, or Default. Note: None requires at least one
+  # nameserver; the webhook skips the change (and logs) rather than emit a
+  # patch the API server would reject.
+  policy: ""
+  # dnsConfig.nameservers to apply (list of IPs).
+  nameservers: []
+  # dnsConfig.searches to apply (list of search domains).
+  searches: []
+  # Additional dnsConfig.options beyond ndots. Values are strings and must be
+  # quoted. Use an option without a value (omit "value") for flags like edns0.
+  # options:
+  #   - name: edns0
+  #   - name: timeout
+  #     value: "1"
+  options: []
+  # Pod annotation carrying a full DNS spec as JSON or YAML (Vault
+  # agent-injector style); it overlays the values above per pod.
+  annotationKey: "ndots.hawky.dev/dns-config"
+  # Pod annotation overriding the strategy for a single pod.
+  strategyAnnotationKey: "ndots.hawky.dev/dns-strategy"
+
 # Namespace filtering
 namespace:
   # Namespaces to exclude from mutation (always excluded)

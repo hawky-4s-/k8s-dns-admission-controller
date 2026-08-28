@@ -67,6 +67,32 @@ spec:
               value: {{ .Values.ndots.annotationKey | quote }}
             - name: ANNOTATION_MODE
               value: {{ .Values.ndots.annotationMode | quote }}
+            - name: DNS_STRATEGY
+              value: {{ .Values.dns.strategy | quote }}
+            {{- if .Values.dns.policy }}
+            - name: DNS_POLICY
+              value: {{ .Values.dns.policy | quote }}
+            {{- end }}
+            {{- if .Values.dns.nameservers }}
+            - name: DNS_NAMESERVERS
+              value: {{ .Values.dns.nameservers | join "," | quote }}
+            {{- end }}
+            {{- if .Values.dns.searches }}
+            - name: DNS_SEARCHES
+              value: {{ .Values.dns.searches | join "," | quote }}
+            {{- end }}
+            {{- if .Values.dns.options }}
+            - name: DNS_OPTIONS
+              value: {{ include "k8s-ndots-admission-controller.dnsOptionsCSV" . | quote }}
+            {{- end }}
+            {{- if .Values.dns.annotationKey }}
+            - name: DNS_SPEC_ANNOTATION_KEY
+              value: {{ .Values.dns.annotationKey | quote }}
+            {{- end }}
+            {{- if .Values.dns.strategyAnnotationKey }}
+            - name: DNS_STRATEGY_ANNOTATION_KEY
+              value: {{ .Values.dns.strategyAnnotationKey | quote }}
+            {{- end }}
             - name: NAMESPACE_EXCLUDE
               value: {{ .Values.namespace.exclude | join "," | quote }}
             {{- if .Values.namespace.include }}
