@@ -182,6 +182,81 @@ func TestE2E_PodMutation(t *testing.T) {
 	t.Logf("Pod %s created with ndots=%s", createdPod.Name, *createdPod.Spec.DNSConfig.Options[0].Value)
 }
 
+// TestE2E_DNSSpecAnnotation tests that a per-pod DNS spec annotation (YAML,
+// Vault agent-injector style) overlays the operator default: the ndots value
+// is overridden and extra searches are applied. This exercises the full
+// deployed webhook end-to-end against a real API server, which re-validates
+// the mutated pod before persisting it.
+//
+// Scenario:
+//
+//	┌──────────────────────────────┐      ┌────────────────────┐      ┌──────────────────────────┐
+//	│  Create Pod with annotation  │─────>│  Webhook overlays  │─────>│  Pod: ndots=4,           │
+//	│  ndots.hawky.dev/dns-config  │      │  spec on default   │      │  searches include team.. │
+//	└──────────────────────────────┘      └────────────────────┘      └──────────────────────────┘
+func TestE2E_DNSSpecAnnotation(t *testing.T) {
+	if clientset == nil {
+		t.Skip("No Kubernetes client available, skipping E2E test")
+	}
+
+	ctx := context.Background()
+
+	const specAnnotation = "ndots.hawky.dev/dns-config"
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-pod-dns-spec",
+			Namespace: testNS,
+			Annotations: map[string]string{
+				specAnnotation: "options:\n  - name: ndots\n    value: \"4\"\nsearches:\n  - team.svc.cluster.local\n",
+			},
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:    "test",
+					Image:   "busybox:latest",
+					Command: []string{"sleep", "3600"},
+				},
+			},
+		},
+	}
+
+	createdPod, err := clientset.CoreV1().Pods(testNS).Create(ctx, pod, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("Failed to create pod: %v", err)
+	}
+	defer clientset.CoreV1().Pods(testNS).Delete(ctx, pod.Name, metav1.DeleteOptions{})
+
+	if createdPod.Spec.DNSConfig == nil {
+		t.Fatal("DNSConfig is nil, expected the DNS spec annotation to be applied")
+	}
+
+	foundNdots := false
+	for _, opt := range createdPod.Spec.DNSConfig.Options {
+		if opt.Name == "ndots" {
+			foundNdots = true
+			if opt.Value == nil || *opt.Value != "4" {
+				t.Errorf("Expected annotation to override ndots=4, got %v", opt.Value)
+			}
+		}
+	}
+	if !foundNdots {
+		t.Error("ndots option not found in DNSConfig")
+	}
+
+	foundSearch := false
+	for _, s := range createdPod.Spec.DNSConfig.Searches {
+		if s == "team.svc.cluster.local" {
+			foundSearch = true
+		}
+	}
+	if !foundSearch {
+		t.Errorf("expected search team.svc.cluster.local, got %v", createdPod.Spec.DNSConfig.Searches)
+	}
+
+	t.Logf("Pod %s created with DNS spec annotation applied: %+v", createdPod.Name, createdPod.Spec.DNSConfig)
+}
+
 // TestE2E_DeploymentMutation tests that pods created by Deployments get mutated
 //
 // Scenario:
