@@ -99,6 +99,27 @@ func Load() (*Config, error) {
 			cfg.MetricsPort = port
 		}
 	}
+	if v := os.Getenv("DNS_NAMESERVERS"); v != "" {
+		cfg.DNSNameservers = splitAndTrim(v)
+	}
+	if v := os.Getenv("DNS_SEARCHES"); v != "" {
+		cfg.DNSSearches = splitAndTrim(v)
+	}
+	if v := os.Getenv("DNS_OPTIONS"); v != "" {
+		cfg.DNSOptions = splitKeyValues(v)
+	}
+	if v := os.Getenv("DNS_POLICY"); v != "" {
+		cfg.DNSPolicy = v
+	}
+	if v := os.Getenv("DNS_STRATEGY"); v != "" {
+		cfg.DNSStrategy = v
+	}
+	if v := os.Getenv("DNS_SPEC_ANNOTATION_KEY"); v != "" {
+		cfg.SpecAnnotationKey = v
+	}
+	if v := os.Getenv("DNS_STRATEGY_ANNOTATION_KEY"); v != "" {
+		cfg.StrategyAnnotationKey = v
+	}
 
 	if err := cfg.Validate(); err != nil {
 		return nil, err
@@ -126,6 +147,26 @@ func (c *Config) Validate() error {
 		return errors.New("tlsKeyPath is required")
 	}
 
+	validStrategies := map[string]bool{"merge": true, "update": true, "unset": true, "override": true}
+	if !validStrategies[c.DNSStrategy] {
+		return errors.New("dnsStrategy must be 'merge', 'update', 'unset', or 'override'")
+	}
+
+	if c.DNSPolicy != "" {
+		validPolicies := map[string]bool{
+			"None": true, "ClusterFirst": true, "ClusterFirstWithHostNet": true, "Default": true,
+		}
+		if !validPolicies[c.DNSPolicy] {
+			return errors.New("dnsPolicy must be 'None', 'ClusterFirst', 'ClusterFirstWithHostNet', or 'Default'")
+		}
+	}
+
+	for _, o := range c.DNSOptions {
+		if o.Name == "" {
+			return errors.New("dns option name must not be empty")
+		}
+	}
+
 	return nil
 }
 
@@ -143,6 +184,13 @@ func (c *Config) LogValue() slog.Value {
 		slog.String("logLevel", c.LogLevel),
 		slog.String("logFormat", c.LogFormat),
 		slog.Int("metricsPort", c.MetricsPort),
+		slog.Any("dnsNameservers", c.DNSNameservers),
+		slog.Any("dnsSearches", c.DNSSearches),
+		slog.Any("dnsOptions", c.DNSOptions),
+		slog.String("dnsPolicy", c.DNSPolicy),
+		slog.String("dnsStrategy", c.DNSStrategy),
+		slog.String("specAnnotationKey", c.SpecAnnotationKey),
+		slog.String("strategyAnnotationKey", c.StrategyAnnotationKey),
 	)
 }
 
@@ -153,6 +201,30 @@ func splitAndTrim(s string) []string {
 		if trimmed := strings.TrimSpace(p); trimmed != "" {
 			result = append(result, trimmed)
 		}
+	}
+	return result
+}
+
+// splitKeyValues parses a comma-separated "name=value,name2=value2" string into
+// DNS options. Entries without "=" are treated as a name with an empty value
+// (e.g. "edns0"). Empty entries are dropped.
+func splitKeyValues(s string) []DNSOption {
+	var result []DNSOption
+	for _, part := range strings.Split(s, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		name, value, found := strings.Cut(part, "=")
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		opt := DNSOption{Name: name}
+		if found {
+			opt.Value = strings.TrimSpace(value)
+		}
+		result = append(result, opt)
 	}
 	return result
 }

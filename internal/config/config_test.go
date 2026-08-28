@@ -26,6 +26,14 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, "info", cfg.LogLevel)
 		assert.Equal(t, "json", cfg.LogFormat)
 		assert.Equal(t, 8080, cfg.MetricsPort)
+		// DNS defaults
+		assert.Equal(t, "merge", cfg.DNSStrategy)
+		assert.Equal(t, "ndots.hawky.dev/dns-config", cfg.SpecAnnotationKey)
+		assert.Equal(t, "ndots.hawky.dev/dns-strategy", cfg.StrategyAnnotationKey)
+		assert.Empty(t, cfg.DNSNameservers)
+		assert.Empty(t, cfg.DNSSearches)
+		assert.Empty(t, cfg.DNSOptions)
+		assert.Empty(t, cfg.DNSPolicy)
 	})
 
 	t.Run("from env", func(t *testing.T) {
@@ -48,6 +56,30 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, "debug", cfg.LogLevel)
 		assert.Equal(t, "text", cfg.LogFormat)
 		assert.Equal(t, 9090, cfg.MetricsPort)
+	})
+
+	t.Run("dns from env", func(t *testing.T) {
+		require.NoError(t, os.Setenv("DNS_NAMESERVERS", "1.1.1.1, 8.8.8.8"))
+		require.NoError(t, os.Setenv("DNS_SEARCHES", "svc.cluster.local"))
+		require.NoError(t, os.Setenv("DNS_OPTIONS", "ndots=3,edns0="))
+		require.NoError(t, os.Setenv("DNS_POLICY", "None"))
+		require.NoError(t, os.Setenv("DNS_STRATEGY", "override"))
+		require.NoError(t, os.Setenv("DNS_SPEC_ANNOTATION_KEY", "custom/dns"))
+		require.NoError(t, os.Setenv("DNS_STRATEGY_ANNOTATION_KEY", "custom/strategy"))
+
+		defer os.Clearenv()
+
+		cfg, err := Load()
+		require.NoError(t, err)
+		assert.Equal(t, []string{"1.1.1.1", "8.8.8.8"}, cfg.DNSNameservers)
+		assert.Equal(t, []string{"svc.cluster.local"}, cfg.DNSSearches)
+		require.Len(t, cfg.DNSOptions, 2)
+		assert.Equal(t, DNSOption{Name: "ndots", Value: "3"}, cfg.DNSOptions[0])
+		assert.Equal(t, DNSOption{Name: "edns0", Value: ""}, cfg.DNSOptions[1])
+		assert.Equal(t, "None", cfg.DNSPolicy)
+		assert.Equal(t, "override", cfg.DNSStrategy)
+		assert.Equal(t, "custom/dns", cfg.SpecAnnotationKey)
+		assert.Equal(t, "custom/strategy", cfg.StrategyAnnotationKey)
 	})
 
 	t.Run("bad env", func(t *testing.T) {
@@ -92,5 +124,37 @@ func TestConfig_Validate(t *testing.T) {
 		err := cfg.Validate()
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "annotationMode")
+	})
+
+	t.Run("invalid dns strategy", func(t *testing.T) {
+		cfg := DefaultConfig
+		cfg.DNSStrategy = "bogus"
+		err := cfg.Validate()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "dnsStrategy")
+	})
+
+	t.Run("invalid dns policy", func(t *testing.T) {
+		cfg := DefaultConfig
+		cfg.DNSPolicy = "Nonsense"
+		err := cfg.Validate()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "dnsPolicy")
+	})
+
+	t.Run("valid dns policy accepted", func(t *testing.T) {
+		cfg := DefaultConfig
+		cfg.DNSPolicy = "None"
+		cfg.DNSNameservers = []string{"1.1.1.1"}
+		err := cfg.Validate()
+		assert.NoError(t, err)
+	})
+
+	t.Run("empty dns option name", func(t *testing.T) {
+		cfg := DefaultConfig
+		cfg.DNSOptions = []DNSOption{{Name: "", Value: "x"}}
+		err := cfg.Validate()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "option")
 	})
 }
