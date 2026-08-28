@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+// DNSOption is a single dnsConfig option (name plus optional value).
+type DNSOption struct {
+	Name  string
+	Value string
+}
+
 type Config struct {
 	NdotsValue       int
 	AnnotationKey    string
@@ -22,6 +28,15 @@ type Config struct {
 	LogLevel         string
 	LogFormat        string
 	MetricsPort      int
+
+	// DNS settings applied to pods in addition to (or superseding) ndots.
+	DNSNameservers        []string
+	DNSSearches           []string
+	DNSOptions            []DNSOption
+	DNSPolicy             string
+	DNSStrategy           string
+	SpecAnnotationKey     string
+	StrategyAnnotationKey string
 }
 
 var DefaultConfig = Config{
@@ -36,6 +51,10 @@ var DefaultConfig = Config{
 	LogLevel:         "info",
 	LogFormat:        "json",
 	MetricsPort:      8080,
+
+	DNSStrategy:           "merge",
+	SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
+	StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
 }
 
 func Load() (*Config, error) {
