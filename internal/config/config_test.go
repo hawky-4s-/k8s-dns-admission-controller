@@ -17,7 +17,7 @@ func TestLoad(t *testing.T) {
 		cfg, err := Load()
 		require.NoError(t, err)
 		assert.Equal(t, 8443, cfg.Port)
-		assert.Equal(t, "ndots.hawky.dev/dns", cfg.DNSEnableAnnotationKey)
+		assert.Equal(t, "dns.hawky.dev/dns", cfg.DNSEnableAnnotationKey)
 		assert.Equal(t, "opt-out", cfg.DNSAnnotationMode)
 		assert.Len(t, cfg.NamespaceExclude, 3) // kube-system, kube-public, kube-node-lease
 		assert.Equal(t, 10*time.Second, cfg.Timeout)
@@ -27,8 +27,8 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, 8080, cfg.MetricsPort)
 		// DNS defaults: no-op out of the box (no options seeded).
 		assert.Equal(t, "merge", cfg.DNSStrategy)
-		assert.Equal(t, "ndots.hawky.dev/dns-config", cfg.SpecAnnotationKey)
-		assert.Equal(t, "ndots.hawky.dev/dns-strategy", cfg.StrategyAnnotationKey)
+		assert.Equal(t, "dns.hawky.dev/dns-config", cfg.SpecAnnotationKey)
+		assert.Equal(t, "dns.hawky.dev/dns-strategy", cfg.StrategyAnnotationKey)
 		assert.Empty(t, cfg.DNSNameservers)
 		assert.Empty(t, cfg.DNSSearches)
 		assert.Empty(t, cfg.DNSOptions)

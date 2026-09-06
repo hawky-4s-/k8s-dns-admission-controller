@@ -23,8 +23,8 @@ helm upgrade --install ndots . \
 | `dns.nameservers` | `dnsConfig.nameservers` to apply | `[]` |
 | `dns.searches` | `dnsConfig.searches` to apply | `[]` |
 | `dns.options` | Extra `dnsConfig.options` beyond ndots (list of `{name, value}`; omit `value` for flags) | `[]` |
-| `dns.annotationKey` | Pod annotation carrying a full DNS spec (JSON/YAML) that overlays these defaults | `ndots.hawky.dev/dns-config` |
-| `dns.strategyAnnotationKey` | Pod annotation overriding `dns.strategy` for a single pod | `ndots.hawky.dev/dns-strategy` |
+| `dns.annotationKey` | Pod annotation carrying a full DNS spec (JSON/YAML) that overlays these defaults | `dns.hawky.dev/dns-config` |
+| `dns.strategyAnnotationKey` | Pod annotation overriding `dns.strategy` for a single pod | `dns.hawky.dev/dns-strategy` |
 | `tls.useCertManager` | Enable cert-manager integration | `true` |
 | `metrics.enabled` | Enable metrics endpoint | `true` |
 | `metrics.serviceMonitor.enabled` | Enable Prometheus ServiceMonitor | `false` |

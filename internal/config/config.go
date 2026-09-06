@@ -52,9 +52,9 @@ var DefaultConfig = Config{
 	MetricsPort:      8080,
 
 	DNSStrategy:            "merge",
-	SpecAnnotationKey:      "ndots.hawky.dev/dns-config",
-	StrategyAnnotationKey:  "ndots.hawky.dev/dns-strategy",
-	DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+	SpecAnnotationKey:      "dns.hawky.dev/dns-config",
+	StrategyAnnotationKey:  "dns.hawky.dev/dns-strategy",
+	DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 	DNSAnnotationMode:      "opt-out",
 }
 
