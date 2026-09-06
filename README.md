@@ -4,15 +4,18 @@
 ![Release](https://github.com/hawky-4s-/k8s-ndots-admission-controller/actions/workflows/release.yaml/badge.svg)
 [![codecov](https://codecov.io/gh/hawky-4s-/k8s-ndots-admission-controller/graph/badge.svg?token=CODECOV_TOKEN)](https://codecov.io/gh/hawky-4s-/k8s-ndots-admission-controller)
 
-A Mutating Admission Controller that injects or updates the `ndots` configuration in `Pod.spec.dnsConfig`. This helps improve DNS resolution performance for applications running in Kubernetes, especially when communicating with external services.
+A Mutating Admission Controller that manages DNS settings in `Pod.spec.dnsConfig` and `Pod.spec.dnsPolicy` — including the `ndots` option, which helps improve DNS resolution performance for applications communicating with external services.
 
 ## Features
 
-- **Automatic Injection**: Sets `ndots` value in Pod DNS configuration.
-- **Configurable Modes**:
-    - `opt-in`: Only mutate pods with annotation `change-ndots: "true"`.
-    - `opt-out`: Mutate all pods except those with annotation `change-ndots: "false"`.
-    - `always`: Mutate all pods regardless of annotations.
+- **Full DNS management**: reconcile `dnsConfig.options` (including `ndots`), `dnsConfig.nameservers`, `dnsConfig.searches`, and the top-level `dnsPolicy`.
+- **Combine strategies**: `merge`, `update`, `unset`, or `override` control how managed values combine with what a pod already declares.
+- **Configurable gate**:
+    - `opt-in`: Only mutate pods with annotation `dns.hawky.dev/dns: "true"`.
+    - `opt-out` (default): Mutate all in-scope pods except those with `dns.hawky.dev/dns: "false"`.
+    - `always`: Mutate all in-scope pods regardless of annotations.
+- **Per-pod overrides**: attach a full DNS spec (JSON/YAML) via a pod annotation.
+- **No-op by default**: with no DNS settings configured, the webhook makes no changes.
 - **Namespace Filtering**: configurable list of included/excluded namespaces.
 - **Critical Namespace Protection**: automatically excludes `kube-system` and other critical namespaces.
 - **Helm Chart**: Easy deployment with Cert Manager integration.
@@ -34,51 +37,53 @@ A Mutating Admission Controller that injects or updates the `ndots` configuratio
    cd k8s-ndots-admission-controller
    ```
 
-2. Install the chart:
+2. Install the chart. Nothing is managed out of the box — configure at least one
+   DNS setting. To set the classic `ndots` value, add it as an option:
    ```bash
    helm upgrade --install ndots ./charts/k8s-ndots-admission-controller \
      --namespace ndots-system \
-     --create-namespace
+     --create-namespace \
+     --set 'dns.options[0].name=ndots' \
+     --set 'dns.options[0].value=2'
    ```
 
 ## Configuration
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `ndots.value` | The ndots value to set | `2` |
-| `ndots.annotationKey` | Annotation key for control | `change-ndots` |
-| `ndots.annotationMode` | Mode: `always`, `opt-in`, `opt-out` | `opt-out` |
 | `dns.strategy` | How managed DNS settings combine: `merge`, `update`, `unset`, `override` | `merge` |
+| `dns.annotationMode` | Gate: `always`, `opt-in`, `opt-out` | `opt-out` |
+| `dns.enableAnnotationKey` | Pod annotation consulted for opt-in/opt-out gating | `dns.hawky.dev/dns` |
 | `dns.policy` | Pod `dnsPolicy` to set (`""` = leave alone) | `""` |
 | `dns.nameservers` | `dnsConfig.nameservers` to apply | `[]` |
 | `dns.searches` | `dnsConfig.searches` to apply | `[]` |
-| `dns.options` | Extra `dnsConfig.options` beyond ndots | `[]` |
+| `dns.options` | `dnsConfig.options` to apply, including `ndots` | `[]` |
 | `dns.annotationKey` | Pod annotation carrying a full DNS spec (JSON/YAML) | `dns.hawky.dev/dns-config` |
 | `dns.strategyAnnotationKey` | Pod annotation overriding the strategy per pod | `dns.hawky.dev/dns-strategy` |
 | `namespace.exclude` | List of namespaces to ignore | `[kube-system, kube-public, kube-node-lease]` |
 | `tls.useCertManager` | Use cert-manager for TLS | `true` |
 
-### Annotation Modes
+### Mutation gate
 
-- **opt-out** (Default): Mutations happen automatically. To skip a pod, add:
+- **opt-out** (Default): in-scope pods are mutated automatically. To skip a pod, add:
   ```yaml
   metadata:
     annotations:
-      change-ndots: "false"
+      dns.hawky.dev/dns: "false"
   ```
-- **opt-in**: No mutations happen by default. To enable for a pod, add:
+- **opt-in**: no mutations happen by default. To enable for a pod, add:
   ```yaml
   metadata:
     annotations:
-      change-ndots: "true"
+      dns.hawky.dev/dns: "true"
   ```
 
 ## DNS settings
 
-Beyond `ndots`, the webhook can manage every pod DNS field: `dnsConfig.options`
-(any named option), `dnsConfig.nameservers`, `dnsConfig.searches`, and the
-top-level `dnsPolicy`. Out of the box it only seeds `ndots` with the legacy
-`merge` behavior, so existing deployments are unaffected.
+The webhook can manage every pod DNS field: `dnsConfig.options` (any named
+option, including `ndots`), `dnsConfig.nameservers`, `dnsConfig.searches`, and
+the top-level `dnsPolicy`. `ndots` is not special-cased — set it like any other
+option. With no settings configured, the webhook is a no-op.
 
 ### Strategies
 
@@ -153,7 +158,7 @@ spec:
   template:
     metadata:
       annotations:
-        change-ndots: "false" # Prevents ndots modification
+        dns.hawky.dev/dns: "false" # Opt this pod out of DNS mutation
     spec:
       containers:
         - name: app
@@ -170,9 +175,9 @@ If `metrics.serviceMonitor.enabled` is `false` (default), the Service is automat
 
 | Metric | Description |
 |--------|-------------|
-| `ndots_admission_requests_total` | Total admission requests processed |
-| `ndots_pod_mutations_total` | Total number of pod mutations performed |
-| `ndots_admission_duration_seconds` | Latency of admission requests |
+| `ndots_webhook_mutations_total` | Total number of pod mutations performed |
+| `ndots_webhook_errors_total` | Total number of mutation errors |
+| `ndots_webhook_request_duration_seconds` | Latency of admission requests |
 
 ## Development
 

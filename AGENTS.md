@@ -392,7 +392,15 @@ Configuration is loaded from environment variables:
 
 | Variable             | Default | Description                           |
 |---------------------|---------|---------------------------------------|
-| `NDOTS_VALUE`       | `2`     | Default ndots value to set            |
+| `DNS_STRATEGY`      | `merge` | Combine strategy: `merge`, `update`, `unset`, `override` |
+| `DNS_ANNOTATION_MODE` | `opt-out` | Gate mode: `always`, `opt-in`, `opt-out` |
+| `DNS_ANNOTATION_KEY` | `dns.hawky.dev/dns` | Pod annotation for opt-in/opt-out gating |
+| `DNS_OPTIONS`       | (unset) | `dnsConfig.options` as `name=value` CSV (e.g. `ndots=2,edns0`) |
+| `DNS_NAMESERVERS`   | (unset) | `dnsConfig.nameservers` as CSV |
+| `DNS_SEARCHES`      | (unset) | `dnsConfig.searches` as CSV |
+| `DNS_POLICY`        | (unset) | Pod `dnsPolicy` to set |
+| `DNS_SPEC_ANNOTATION_KEY` | `dns.hawky.dev/dns-config` | Pod annotation carrying a full DNS spec |
+| `DNS_STRATEGY_ANNOTATION_KEY` | `dns.hawky.dev/dns-strategy` | Pod annotation overriding the strategy |
 | `TLS_CERT_PATH`     | `/certs/tls.crt` | Path to TLS certificate     |
 | `TLS_KEY_PATH`      | `/certs/tls.key` | Path to TLS private key     |
 | `LOG_LEVEL`         | `info`  | Logging level (debug, info, warn, error) |
