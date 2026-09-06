@@ -109,8 +109,8 @@ func findOption(opts []corev1.PodDNSConfigOption, name string) *corev1.PodDNSCon
 // well-formed patch that applies cleanly.
 func TestIntegration_DNSSpecAnnotation(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:            2,
-		AnnotationMode:        "always",
+		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSAnnotationMode:     "always",
 		DNSStrategy:           "merge",
 		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
 		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
@@ -151,8 +151,8 @@ func TestIntegration_DNSSpecAnnotation(t *testing.T) {
 // annotation) replaces the whole options array through the real stack.
 func TestIntegration_StrategyOverride(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:            2,
-		AnnotationMode:        "always",
+		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSAnnotationMode:     "always",
 		DNSStrategy:           "merge",
 		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
 		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
@@ -189,8 +189,8 @@ func TestIntegration_StrategyOverride(t *testing.T) {
 // and searches are applied and merged onto an existing dnsConfig.
 func TestIntegration_HelmDrivenDNS(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:            2,
-		AnnotationMode:        "always",
+		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSAnnotationMode:     "always",
 		DNSStrategy:           "merge",
 		DNSNameservers:        []string{"10.0.0.10"},
 		DNSSearches:           []string{"svc.cluster.local"},
@@ -224,8 +224,8 @@ func TestIntegration_HelmDrivenDNS(t *testing.T) {
 func TestIntegration_DNSPolicyNoneGuard(t *testing.T) {
 	t.Run("None without nameservers is skipped", func(t *testing.T) {
 		cfg := &config.Config{
-			NdotsValue:            2,
-			AnnotationMode:        "always",
+			DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
+			DNSAnnotationMode:     "always",
 			DNSStrategy:           "merge",
 			DNSPolicy:             "None",
 			SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
@@ -244,8 +244,8 @@ func TestIntegration_DNSPolicyNoneGuard(t *testing.T) {
 
 	t.Run("None with nameservers is applied", func(t *testing.T) {
 		cfg := &config.Config{
-			NdotsValue:            2,
-			AnnotationMode:        "always",
+			DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
+			DNSAnnotationMode:     "always",
 			DNSStrategy:           "merge",
 			DNSPolicy:             "None",
 			DNSNameservers:        []string{"1.1.1.1"},
@@ -270,8 +270,8 @@ func TestIntegration_DNSPolicyNoneGuard(t *testing.T) {
 // annotation degrades to the operator default rather than blocking the pod.
 func TestIntegration_MalformedSpecAnnotationFailOpen(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:            2,
-		AnnotationMode:        "always",
+		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSAnnotationMode:     "always",
 		DNSStrategy:           "merge",
 		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
 		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",

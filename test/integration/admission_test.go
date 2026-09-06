@@ -51,9 +51,9 @@ import (
 func TestIntegration_FullAdmissionFlow(t *testing.T) {
 	// Create a full stack with real components
 	cfg := &config.Config{
-		NdotsValue:     2,
-		AnnotationKey:  "change-ndots",
-		AnnotationMode: "opt-out",
+		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSAnnotationMode:      "opt-out",
 	}
 
 	logger := logging.NewLogger("info", "json", os.Stdout)
@@ -96,7 +96,7 @@ func TestIntegration_FullAdmissionFlow(t *testing.T) {
 					Name:      "test-pod-skip",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"change-ndots": "false",
+						"ndots.hawky.dev/dns": "false",
 					},
 				},
 				Spec: corev1.PodSpec{},
@@ -196,9 +196,9 @@ func TestIntegration_FullAdmissionFlow(t *testing.T) {
 //	      (goroutines)
 func TestIntegration_ConcurrentAdmissions(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:     1,
-		AnnotationKey:  "change-ndots",
-		AnnotationMode: "always",
+		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "1"}},
+		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSAnnotationMode:      "always",
 	}
 
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
@@ -275,9 +275,9 @@ func TestIntegration_ConcurrentAdmissions(t *testing.T) {
 //	                                     └──────────────────────────────────┘
 func TestIntegration_MetricsRecorded(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:     2,
-		AnnotationKey:  "change-ndots",
-		AnnotationMode: "opt-out",
+		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSAnnotationMode:      "opt-out",
 	}
 
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
@@ -346,9 +346,9 @@ func TestIntegration_TLSServer(t *testing.T) {
 	}
 
 	cfg := &config.Config{
-		NdotsValue:     2,
-		AnnotationKey:  "change-ndots",
-		AnnotationMode: "opt-out",
+		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSAnnotationMode:      "opt-out",
 	}
 
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
@@ -413,9 +413,9 @@ func TestIntegration_TLSServer(t *testing.T) {
 //	└─────────────────────────────────────────────────────────────┘
 func TestIntegration_WorkloadTypes(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:     2,
-		AnnotationKey:  "change-ndots",
-		AnnotationMode: "opt-out",
+		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSAnnotationMode:      "opt-out",
 	}
 
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
@@ -593,9 +593,9 @@ func TestIntegration_WorkloadTypes(t *testing.T) {
 func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 	// Full-stack setup with exact bug report config values
 	cfg := &config.Config{
-		NdotsValue:       2,
-		AnnotationKey:    "change-ndots",
-		AnnotationMode:   "opt-out",
+		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSAnnotationMode:      "opt-out",
 		NamespaceExclude: []string{"kube-system", "kube-public", "kube-node-lease"},
 	}
 
@@ -687,7 +687,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 					Name:      "test-pod",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"change-ndots": "false",
+						"ndots.hawky.dev/dns": "false",
 					},
 				},
 				Spec: corev1.PodSpec{},
@@ -715,7 +715,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 					Name:      "test-pod",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"change-ndots": "true",
+						"ndots.hawky.dev/dns": "true",
 					},
 				},
 				Spec: corev1.PodSpec{},
@@ -731,7 +731,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 					Name:      "test-pod",
 					Namespace: "kube-system",
 					Annotations: map[string]string{
-						"change-ndots": "true",
+						"ndots.hawky.dev/dns": "true",
 					},
 				},
 				Spec: corev1.PodSpec{},
@@ -873,9 +873,9 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 func TestIntegration_HandlerNamespaceResolution(t *testing.T) {
 	// Full-stack setup with exact bug report config values
 	cfg := &config.Config{
-		NdotsValue:       2,
-		AnnotationKey:    "change-ndots",
-		AnnotationMode:   "opt-out",
+		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSAnnotationMode:      "opt-out",
 		NamespaceExclude: []string{"kube-system", "kube-public", "kube-node-lease"},
 	}
 
@@ -1102,9 +1102,9 @@ func TestIntegration_HandlerNamespaceResolution(t *testing.T) {
 //	└───────────-──┘     └─────────────┘
 func TestIntegration_NamespaceExclusion(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:       2,
-		AnnotationKey:    "change-ndots",
-		AnnotationMode:   "opt-out",
+		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSAnnotationMode:      "opt-out",
 		NamespaceExclude: []string{"kube-system", "kube-public"},
 	}
 
