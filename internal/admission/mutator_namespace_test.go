@@ -24,7 +24,7 @@ func TestMutator_Mutate_Namespace(t *testing.T) {
 		{
 			name: "exclude namespace -> no patch",
 			cfg: &config.Config{
-				NdotsValue:       2,
+				DNSOptions:       []config.DNSOption{{Name: "ndots", Value: "2"}},
 				NamespaceExclude: []string{"kube-system"},
 			},
 			pod: &corev1.Pod{
@@ -36,7 +36,7 @@ func TestMutator_Mutate_Namespace(t *testing.T) {
 		{
 			name: "include namespace (match) -> patch",
 			cfg: &config.Config{
-				NdotsValue:       2,
+				DNSOptions:       []config.DNSOption{{Name: "ndots", Value: "2"}},
 				NamespaceInclude: []string{"prod"},
 			},
 			pod: &corev1.Pod{
@@ -48,7 +48,7 @@ func TestMutator_Mutate_Namespace(t *testing.T) {
 		{
 			name: "include namespace (no match) -> no patch",
 			cfg: &config.Config{
-				NdotsValue:       2,
+				DNSOptions:       []config.DNSOption{{Name: "ndots", Value: "2"}},
 				NamespaceInclude: []string{"prod"},
 			},
 			pod: &corev1.Pod{

@@ -146,8 +146,20 @@ func TestDNSSpec_MergeOverlay(t *testing.T) {
 }
 
 func TestDefaultDNSSpecFromConfig(t *testing.T) {
-	t.Run("ndots only maps to single option, merge strategy", func(t *testing.T) {
-		cfg := &config.Config{NdotsValue: 2, DNSStrategy: "merge"}
+	t.Run("empty config yields no options (no-op default)", func(t *testing.T) {
+		spec := DefaultDNSSpecFromConfig(&config.Config{DNSStrategy: "merge"})
+		assert.Empty(t, spec.Options)
+		assert.Empty(t, spec.Nameservers)
+		assert.Empty(t, spec.Searches)
+		assert.Nil(t, spec.DNSPolicy)
+		assert.Equal(t, StrategyMerge, spec.Strategy)
+	})
+
+	t.Run("ndots option maps through, merge strategy", func(t *testing.T) {
+		cfg := &config.Config{
+			DNSOptions:  []config.DNSOption{{Name: "ndots", Value: "2"}},
+			DNSStrategy: "merge",
+		}
 		spec := DefaultDNSSpecFromConfig(cfg)
 		require.Len(t, spec.Options, 1)
 		assert.Equal(t, "ndots", spec.Options[0].Name)
@@ -161,7 +173,6 @@ func TestDefaultDNSSpecFromConfig(t *testing.T) {
 
 	t.Run("nameservers searches policy mapped through", func(t *testing.T) {
 		cfg := &config.Config{
-			NdotsValue:     2,
 			DNSStrategy:    "override",
 			DNSNameservers: []string{"10.0.0.10"},
 			DNSSearches:    []string{"svc.local"},
@@ -175,11 +186,10 @@ func TestDefaultDNSSpecFromConfig(t *testing.T) {
 		assert.Equal(t, StrategyOverride, spec.Strategy)
 	})
 
-	t.Run("config options merge with ndots", func(t *testing.T) {
+	t.Run("multiple options mapped through in order", func(t *testing.T) {
 		cfg := &config.Config{
-			NdotsValue:  2,
 			DNSStrategy: "merge",
-			DNSOptions:  []config.DNSOption{{Name: "edns0", Value: ""}},
+			DNSOptions:  []config.DNSOption{{Name: "ndots", Value: "2"}, {Name: "edns0", Value: ""}},
 		}
 		spec := DefaultDNSSpecFromConfig(cfg)
 		names := make([]string, 0, len(spec.Options))

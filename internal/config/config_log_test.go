@@ -11,25 +11,24 @@ import (
 func TestConfig_LogValue(t *testing.T) {
 	// Create a fully populated config
 	cfg := &Config{
-		NdotsValue:            2,
-		AnnotationKey:         "test-key",
-		AnnotationMode:        "opt-in",
-		NamespaceInclude:      []string{"inc1", "inc2"},
-		NamespaceExclude:      []string{"exc1"},
-		Port:                  8443,
-		TLSCertPath:           "/path/to/cert",
-		TLSKeyPath:            "/path/to/key",
-		Timeout:               5 * time.Second,
-		LogLevel:              "debug",
-		LogFormat:             "json",
-		MetricsPort:           9090,
-		DNSNameservers:        []string{"1.1.1.1"},
-		DNSSearches:           []string{"svc.local"},
-		DNSOptions:            []DNSOption{{Name: "ndots", Value: "2"}},
-		DNSPolicy:             "None",
-		DNSStrategy:           "override",
-		SpecAnnotationKey:     "custom/dns",
-		StrategyAnnotationKey: "custom/strategy",
+		DNSEnableAnnotationKey: "test-key",
+		DNSAnnotationMode:      "opt-in",
+		NamespaceInclude:       []string{"inc1", "inc2"},
+		NamespaceExclude:       []string{"exc1"},
+		Port:                   8443,
+		TLSCertPath:            "/path/to/cert",
+		TLSKeyPath:             "/path/to/key",
+		Timeout:                5 * time.Second,
+		LogLevel:               "debug",
+		LogFormat:              "json",
+		MetricsPort:            9090,
+		DNSNameservers:         []string{"1.1.1.1"},
+		DNSSearches:            []string{"svc.local"},
+		DNSOptions:             []DNSOption{{Name: "ndots", Value: "2"}},
+		DNSPolicy:              "None",
+		DNSStrategy:            "override",
+		SpecAnnotationKey:      "custom/dns",
+		StrategyAnnotationKey:  "custom/strategy",
 	}
 
 	// Verify it implements LogValuer
@@ -49,9 +48,8 @@ func TestConfig_LogValue(t *testing.T) {
 	}
 
 	// Assert fields
-	assert.Equal(t, int64(2), attrMap["ndotsValue"].Int64())
-	assert.Equal(t, "test-key", attrMap["annotationKey"].String())
-	assert.Equal(t, "opt-in", attrMap["annotationMode"].String())
+	assert.Equal(t, "test-key", attrMap["dnsEnableAnnotationKey"].String())
+	assert.Equal(t, "opt-in", attrMap["dnsAnnotationMode"].String())
 
 	// Slices are a bit tricky in slog.Value, usually Any.
 	// We can check they exist.

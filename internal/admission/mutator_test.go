@@ -13,7 +13,11 @@ import (
 
 func TestMutator_Mutate(t *testing.T) {
 	logger := slog.Default()
-	cfg := &config.Config{NdotsValue: 2}
+	// ndots is now an ordinary configured option; there is no auto-seeding.
+	cfg := &config.Config{
+		DNSOptions:  []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSStrategy: "merge",
+	}
 	mutator := NewMutator(cfg, logger)
 
 	ndotsTwo := "2"
@@ -133,5 +137,25 @@ func TestMutator_Mutate(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestMutator_Mutate_NoDNSConfigIsNoOp verifies the no-op default: with no DNS
+// settings configured, the webhook emits no patches for any pod.
+func TestMutator_Mutate_NoOpDefault(t *testing.T) {
+	logger := slog.Default()
+	mutator := NewMutator(&config.Config{DNSStrategy: "merge"}, logger)
+
+	pods := []*corev1.Pod{
+		{Spec: corev1.PodSpec{}},
+		{Spec: corev1.PodSpec{DNSConfig: &corev1.PodDNSConfig{}}},
+		{Spec: corev1.PodSpec{DNSConfig: &corev1.PodDNSConfig{
+			Options: []corev1.PodDNSConfigOption{{Name: "ndots", Value: strPtr("5")}},
+		}}},
+	}
+	for _, pod := range pods {
+		patches, err := mutator.Mutate(pod)
+		require.NoError(t, err)
+		assert.Empty(t, patches, "empty config must produce no patches")
 	}
 }

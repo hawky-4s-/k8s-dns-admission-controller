@@ -17,16 +17,15 @@ func TestLoad(t *testing.T) {
 		cfg, err := Load()
 		require.NoError(t, err)
 		assert.Equal(t, 8443, cfg.Port)
-		assert.Equal(t, 2, cfg.NdotsValue)
-		assert.Equal(t, "change-ndots", cfg.AnnotationKey)
-		assert.Equal(t, "opt-out", cfg.AnnotationMode)
+		assert.Equal(t, "ndots.hawky.dev/dns", cfg.DNSEnableAnnotationKey)
+		assert.Equal(t, "opt-out", cfg.DNSAnnotationMode)
 		assert.Len(t, cfg.NamespaceExclude, 3) // kube-system, kube-public, kube-node-lease
 		assert.Equal(t, 10*time.Second, cfg.Timeout)
 		// New fields
 		assert.Equal(t, "info", cfg.LogLevel)
 		assert.Equal(t, "json", cfg.LogFormat)
 		assert.Equal(t, 8080, cfg.MetricsPort)
-		// DNS defaults
+		// DNS defaults: no-op out of the box (no options seeded).
 		assert.Equal(t, "merge", cfg.DNSStrategy)
 		assert.Equal(t, "ndots.hawky.dev/dns-config", cfg.SpecAnnotationKey)
 		assert.Equal(t, "ndots.hawky.dev/dns-strategy", cfg.StrategyAnnotationKey)
@@ -38,8 +37,8 @@ func TestLoad(t *testing.T) {
 
 	t.Run("from env", func(t *testing.T) {
 		require.NoError(t, os.Setenv("PORT", "9090"))
-		require.NoError(t, os.Setenv("NDOTS_VALUE", "5"))
-		require.NoError(t, os.Setenv("ANNOTATION_MODE", "opt-in"))
+		require.NoError(t, os.Setenv("DNS_ANNOTATION_KEY", "example.com/dns"))
+		require.NoError(t, os.Setenv("DNS_ANNOTATION_MODE", "opt-in"))
 		require.NoError(t, os.Setenv("NAMESPACE_INCLUDE", "prod,staging"))
 		require.NoError(t, os.Setenv("LOG_LEVEL", "debug"))
 		require.NoError(t, os.Setenv("LOG_FORMAT", "text"))
@@ -50,8 +49,8 @@ func TestLoad(t *testing.T) {
 		cfg, err := Load()
 		require.NoError(t, err)
 		assert.Equal(t, 9090, cfg.Port)
-		assert.Equal(t, 5, cfg.NdotsValue)
-		assert.Equal(t, "opt-in", cfg.AnnotationMode)
+		assert.Equal(t, "example.com/dns", cfg.DNSEnableAnnotationKey)
+		assert.Equal(t, "opt-in", cfg.DNSAnnotationMode)
 		assert.Equal(t, []string{"prod", "staging"}, cfg.NamespaceInclude)
 		assert.Equal(t, "debug", cfg.LogLevel)
 		assert.Equal(t, "text", cfg.LogFormat)
@@ -110,17 +109,9 @@ func TestConfig_Validate(t *testing.T) {
 		assert.Contains(t, err.Error(), "port")
 	})
 
-	t.Run("invalid ndots", func(t *testing.T) {
-		cfg := DefaultConfig
-		cfg.NdotsValue = 16
-		err := cfg.Validate()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "ndots")
-	})
-
 	t.Run("invalid annot mode", func(t *testing.T) {
 		cfg := DefaultConfig
-		cfg.AnnotationMode = "foo"
+		cfg.DNSAnnotationMode = "foo"
 		err := cfg.Validate()
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "annotationMode")

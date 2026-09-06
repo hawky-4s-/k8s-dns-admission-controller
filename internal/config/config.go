@@ -16,9 +16,6 @@ type DNSOption struct {
 }
 
 type Config struct {
-	NdotsValue       int
-	AnnotationKey    string
-	AnnotationMode   string
 	NamespaceInclude []string
 	NamespaceExclude []string
 	Port             int
@@ -29,7 +26,7 @@ type Config struct {
 	LogFormat        string
 	MetricsPort      int
 
-	// DNS settings applied to pods in addition to (or superseding) ndots.
+	// DNS settings applied to matching pods.
 	DNSNameservers        []string
 	DNSSearches           []string
 	DNSOptions            []DNSOption
@@ -37,13 +34,15 @@ type Config struct {
 	DNSStrategy           string
 	SpecAnnotationKey     string
 	StrategyAnnotationKey string
+
+	// DNSEnableAnnotationKey and DNSAnnotationMode gate whether a pod is
+	// mutated at all. Mode is one of "always", "opt-in", or "opt-out".
+	DNSEnableAnnotationKey string
+	DNSAnnotationMode      string
 }
 
 var DefaultConfig = Config{
 	Port:             8443,
-	NdotsValue:       2,
-	AnnotationKey:    "change-ndots",
-	AnnotationMode:   "opt-out",
 	NamespaceExclude: []string{"kube-system", "kube-public", "kube-node-lease"},
 	Timeout:          10 * time.Second,
 	TLSCertPath:      "/certs/tls.crt",
@@ -52,9 +51,11 @@ var DefaultConfig = Config{
 	LogFormat:        "json",
 	MetricsPort:      8080,
 
-	DNSStrategy:           "merge",
-	SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-	StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+	DNSStrategy:            "merge",
+	SpecAnnotationKey:      "ndots.hawky.dev/dns-config",
+	StrategyAnnotationKey:  "ndots.hawky.dev/dns-strategy",
+	DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+	DNSAnnotationMode:      "opt-out",
 }
 
 func Load() (*Config, error) {
@@ -65,16 +66,11 @@ func Load() (*Config, error) {
 			cfg.Port = port
 		}
 	}
-	if v := os.Getenv("NDOTS_VALUE"); v != "" {
-		if ndots, err := strconv.Atoi(v); err == nil {
-			cfg.NdotsValue = ndots
-		}
+	if v := os.Getenv("DNS_ANNOTATION_KEY"); v != "" {
+		cfg.DNSEnableAnnotationKey = v
 	}
-	if v := os.Getenv("ANNOTATION_KEY"); v != "" {
-		cfg.AnnotationKey = v
-	}
-	if v := os.Getenv("ANNOTATION_MODE"); v != "" {
-		cfg.AnnotationMode = v
+	if v := os.Getenv("DNS_ANNOTATION_MODE"); v != "" {
+		cfg.DNSAnnotationMode = v
 	}
 	if v := os.Getenv("NAMESPACE_INCLUDE"); v != "" {
 		cfg.NamespaceInclude = splitAndTrim(v)
@@ -131,12 +127,9 @@ func (c *Config) Validate() error {
 	if c.Port < 1 || c.Port > 65535 {
 		return errors.New("port must be between 1 and 65535")
 	}
-	if c.NdotsValue < 0 || c.NdotsValue > 15 {
-		return errors.New("ndotsValue must be between 0 and 15")
-	}
 
 	validModes := map[string]bool{"always": true, "opt-in": true, "opt-out": true}
-	if !validModes[c.AnnotationMode] {
+	if !validModes[c.DNSAnnotationMode] {
 		return errors.New("annotationMode must be 'always', 'opt-in', or 'opt-out'")
 	}
 
@@ -172,9 +165,8 @@ func (c *Config) Validate() error {
 
 func (c *Config) LogValue() slog.Value {
 	return slog.GroupValue(
-		slog.Int("ndotsValue", c.NdotsValue),
-		slog.String("annotationKey", c.AnnotationKey),
-		slog.String("annotationMode", c.AnnotationMode),
+		slog.String("dnsEnableAnnotationKey", c.DNSEnableAnnotationKey),
+		slog.String("dnsAnnotationMode", c.DNSAnnotationMode),
 		slog.Any("namespaceInclude", c.NamespaceInclude),
 		slog.Any("namespaceExclude", c.NamespaceExclude),
 		slog.Int("port", c.Port),
