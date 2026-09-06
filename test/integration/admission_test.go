@@ -41,7 +41,7 @@ import (
 //	                             │ Webhook  │
 //	┌──────────────────────┐     │ Handler  │     ┌──────────────-─────────┐
 //	│ CASE B: pod with     │────>│          │────>│ 🚫 SKIPPED: opt-out    │
-//	│ change-ndots: "false"│     │ (httptest│     └──────────────-─────────┘
+//	│ dns.hawky.dev/dns: "false"│     │ (httptest│     └──────────────-─────────┘
 //	└──────────────────────┘     │  server) │
 //	                             │          │
 //	┌──────────────────────┐     │          │     ┌────────────────────────┐
@@ -586,7 +586,7 @@ func TestIntegration_WorkloadTypes(t *testing.T) {
 //	kube-node-lease🚫 excl
 //
 //	┌─────────────────────────────────────────────────┐
-//	│  kube-system + change-ndots: "true"             │
+//	│  kube-system + dns.hawky.dev/dns: "true"             │
 //	│  → 🚫 NOT mutated                               │
 //	│  → namespace exclusion WINS over annotation     │
 //	└─────────────────────────────────────────────────┘
@@ -681,7 +681,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 			wantMutated: false,
 		},
 		{
-			name: "pod with change-ndots false annotation in default - NOT mutated",
+			name: "pod with dns.hawky.dev/dns false annotation in default - NOT mutated",
 			pod: corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-pod",
@@ -709,7 +709,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 			wantNdots:   "2",
 		},
 		{
-			name: "pod with change-ndots true in default - still mutated (opt-out only skips on false)",
+			name: "pod with dns.hawky.dev/dns true in default - still mutated (opt-out only skips on false)",
 			pod: corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-pod",
@@ -725,7 +725,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 			wantNdots:   "2",
 		},
 		{
-			name: "pod in kube-system with change-ndots true - NOT mutated (namespace exclusion takes priority)",
+			name: "pod in kube-system with dns.hawky.dev/dns true - NOT mutated (namespace exclusion takes priority)",
 			pod: corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-pod",

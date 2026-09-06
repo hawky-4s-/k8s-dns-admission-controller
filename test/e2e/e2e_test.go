@@ -355,7 +355,7 @@ func TestE2E_DeploymentMutation(t *testing.T) {
 //	┌──────────────────────────┐      ┌───────────-────────┐      ┌──────────────────┐
 //	│  Create Pod              │─────>│  Admission Webhook │─────>│  Pod UNCHANGED   │
 //	│  annotations:            │      │  checks annotation │      │  no dnsConfig    │
-//	│    change-ndots: "false" │      │  → opt-out!        │      │  injected        │
+//	│    dns.hawky.dev/dns: "false" │  │  → opt-out!        │      │  injected        │
 //	└──────────────────────────┘      └────────────-───────┘      └──────────────────┘
 //	                                   🚫 SKIP                    ✅ no ndots
 func TestE2E_AnnotationOptOut(t *testing.T) {
@@ -371,7 +371,7 @@ func TestE2E_AnnotationOptOut(t *testing.T) {
 			Name:      "test-pod-optout",
 			Namespace: testNS,
 			Annotations: map[string]string{
-				"change-ndots": "false",
+				"dns.hawky.dev/dns": "false",
 			},
 		},
 		Spec: corev1.PodSpec{
