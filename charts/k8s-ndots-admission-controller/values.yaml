@@ -62,9 +62,9 @@ dns:
   options: []
   # Pod annotation carrying a full DNS spec as JSON or YAML (Vault
   # agent-injector style); it overlays the values above per pod.
-  annotationKey: "ndots.hawky.dev/dns-config"
+  annotationKey: "dns.hawky.dev/dns-config"
   # Pod annotation overriding the strategy for a single pod.
-  strategyAnnotationKey: "ndots.hawky.dev/dns-strategy"
+  strategyAnnotationKey: "dns.hawky.dev/dns-strategy"
 
 # Namespace filtering
 namespace:

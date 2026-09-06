@@ -53,8 +53,8 @@ A Mutating Admission Controller that injects or updates the `ndots` configuratio
 | `dns.nameservers` | `dnsConfig.nameservers` to apply | `[]` |
 | `dns.searches` | `dnsConfig.searches` to apply | `[]` |
 | `dns.options` | Extra `dnsConfig.options` beyond ndots | `[]` |
-| `dns.annotationKey` | Pod annotation carrying a full DNS spec (JSON/YAML) | `ndots.hawky.dev/dns-config` |
-| `dns.strategyAnnotationKey` | Pod annotation overriding the strategy per pod | `ndots.hawky.dev/dns-strategy` |
+| `dns.annotationKey` | Pod annotation carrying a full DNS spec (JSON/YAML) | `dns.hawky.dev/dns-config` |
+| `dns.strategyAnnotationKey` | Pod annotation overriding the strategy per pod | `dns.hawky.dev/dns-strategy` |
 | `namespace.exclude` | List of namespaces to ignore | `[kube-system, kube-public, kube-node-lease]` |
 | `tls.useCertManager` | Use cert-manager for TLS | `true` |
 
@@ -117,14 +117,14 @@ that overlays the global default for that pod:
 metadata:
   annotations:
     # JSON or YAML both work; option values must be quoted strings.
-    ndots.hawky.dev/dns-config: |
+    dns.hawky.dev/dns-config: |
       nameservers: ["1.1.1.1"]
       searches: ["team.svc.cluster.local"]
       options:
         - name: ndots
           value: "3"
     # Optionally change the strategy just for this pod.
-    ndots.hawky.dev/dns-strategy: override
+    dns.hawky.dev/dns-strategy: override
 ```
 
 ### Runtime safety

@@ -192,7 +192,7 @@ func TestE2E_PodMutation(t *testing.T) {
 //
 //	┌──────────────────────────────┐      ┌────────────────────┐      ┌──────────────────────────┐
 //	│  Create Pod with annotation  │─────>│  Webhook overlays  │─────>│  Pod: ndots=4,           │
-//	│  ndots.hawky.dev/dns-config  │      │  spec on default   │      │  searches include team.. │
+//	│  dns.hawky.dev/dns-config  │      │  spec on default   │      │  searches include team.. │
 //	└──────────────────────────────┘      └────────────────────┘      └──────────────────────────┘
 func TestE2E_DNSSpecAnnotation(t *testing.T) {
 	if clientset == nil {
@@ -201,7 +201,7 @@ func TestE2E_DNSSpecAnnotation(t *testing.T) {
 
 	ctx := context.Background()
 
-	const specAnnotation = "ndots.hawky.dev/dns-config"
+	const specAnnotation = "dns.hawky.dev/dns-config"
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-pod-dns-spec",

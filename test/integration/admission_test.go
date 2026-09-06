@@ -52,7 +52,7 @@ func TestIntegration_FullAdmissionFlow(t *testing.T) {
 	// Create a full stack with real components
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
-		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
 	}
 
@@ -96,7 +96,7 @@ func TestIntegration_FullAdmissionFlow(t *testing.T) {
 					Name:      "test-pod-skip",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"ndots.hawky.dev/dns": "false",
+						"dns.hawky.dev/dns": "false",
 					},
 				},
 				Spec: corev1.PodSpec{},
@@ -197,7 +197,7 @@ func TestIntegration_FullAdmissionFlow(t *testing.T) {
 func TestIntegration_ConcurrentAdmissions(t *testing.T) {
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "1"}},
-		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "always",
 	}
 
@@ -276,7 +276,7 @@ func TestIntegration_ConcurrentAdmissions(t *testing.T) {
 func TestIntegration_MetricsRecorded(t *testing.T) {
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
-		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
 	}
 
@@ -347,7 +347,7 @@ func TestIntegration_TLSServer(t *testing.T) {
 
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
-		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
 	}
 
@@ -414,7 +414,7 @@ func TestIntegration_TLSServer(t *testing.T) {
 func TestIntegration_WorkloadTypes(t *testing.T) {
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
-		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
 	}
 
@@ -594,7 +594,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 	// Full-stack setup with exact bug report config values
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
-		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
 		NamespaceExclude: []string{"kube-system", "kube-public", "kube-node-lease"},
 	}
@@ -687,7 +687,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 					Name:      "test-pod",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"ndots.hawky.dev/dns": "false",
+						"dns.hawky.dev/dns": "false",
 					},
 				},
 				Spec: corev1.PodSpec{},
@@ -715,7 +715,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 					Name:      "test-pod",
 					Namespace: "default",
 					Annotations: map[string]string{
-						"ndots.hawky.dev/dns": "true",
+						"dns.hawky.dev/dns": "true",
 					},
 				},
 				Spec: corev1.PodSpec{},
@@ -731,7 +731,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 					Name:      "test-pod",
 					Namespace: "kube-system",
 					Annotations: map[string]string{
-						"ndots.hawky.dev/dns": "true",
+						"dns.hawky.dev/dns": "true",
 					},
 				},
 				Spec: corev1.PodSpec{},
@@ -874,7 +874,7 @@ func TestIntegration_HandlerNamespaceResolution(t *testing.T) {
 	// Full-stack setup with exact bug report config values
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
-		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
 		NamespaceExclude: []string{"kube-system", "kube-public", "kube-node-lease"},
 	}
@@ -1103,7 +1103,7 @@ func TestIntegration_HandlerNamespaceResolution(t *testing.T) {
 func TestIntegration_NamespaceExclusion(t *testing.T) {
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
-		DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
 		NamespaceExclude: []string{"kube-system", "kube-public"},
 	}

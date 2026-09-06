@@ -112,8 +112,8 @@ func TestIntegration_DNSSpecAnnotation(t *testing.T) {
 		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
 		DNSAnnotationMode:     "always",
 		DNSStrategy:           "merge",
-		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+		SpecAnnotationKey:     "dns.hawky.dev/dns-config",
+		StrategyAnnotationKey: "dns.hawky.dev/dns-strategy",
 	}
 	server := newDNSTestServer(t, cfg)
 
@@ -154,8 +154,8 @@ func TestIntegration_StrategyOverride(t *testing.T) {
 		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
 		DNSAnnotationMode:     "always",
 		DNSStrategy:           "merge",
-		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+		SpecAnnotationKey:     "dns.hawky.dev/dns-config",
+		StrategyAnnotationKey: "dns.hawky.dev/dns-strategy",
 	}
 	server := newDNSTestServer(t, cfg)
 
@@ -194,8 +194,8 @@ func TestIntegration_HelmDrivenDNS(t *testing.T) {
 		DNSStrategy:           "merge",
 		DNSNameservers:        []string{"10.0.0.10"},
 		DNSSearches:           []string{"svc.cluster.local"},
-		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+		SpecAnnotationKey:     "dns.hawky.dev/dns-config",
+		StrategyAnnotationKey: "dns.hawky.dev/dns-strategy",
 	}
 	server := newDNSTestServer(t, cfg)
 
@@ -228,8 +228,8 @@ func TestIntegration_DNSPolicyNoneGuard(t *testing.T) {
 			DNSAnnotationMode:     "always",
 			DNSStrategy:           "merge",
 			DNSPolicy:             "None",
-			SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-			StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+			SpecAnnotationKey:     "dns.hawky.dev/dns-config",
+			StrategyAnnotationKey: "dns.hawky.dev/dns-strategy",
 		}
 		server := newDNSTestServer(t, cfg)
 
@@ -249,8 +249,8 @@ func TestIntegration_DNSPolicyNoneGuard(t *testing.T) {
 			DNSStrategy:           "merge",
 			DNSPolicy:             "None",
 			DNSNameservers:        []string{"1.1.1.1"},
-			SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-			StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+			SpecAnnotationKey:     "dns.hawky.dev/dns-config",
+			StrategyAnnotationKey: "dns.hawky.dev/dns-strategy",
 		}
 		server := newDNSTestServer(t, cfg)
 
@@ -273,8 +273,8 @@ func TestIntegration_MalformedSpecAnnotationFailOpen(t *testing.T) {
 		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
 		DNSAnnotationMode:     "always",
 		DNSStrategy:           "merge",
-		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+		SpecAnnotationKey:     "dns.hawky.dev/dns-config",
+		StrategyAnnotationKey: "dns.hawky.dev/dns-strategy",
 	}
 	server := newDNSTestServer(t, cfg)
 

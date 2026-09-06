@@ -26,7 +26,7 @@ func TestMutator_Mutate_Annotations(t *testing.T) {
 			cfg: &config.Config{
 				DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
 				DNSAnnotationMode:      "opt-in",
-				DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+				DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 			},
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{Name: "pod"},
@@ -39,12 +39,12 @@ func TestMutator_Mutate_Annotations(t *testing.T) {
 			cfg: &config.Config{
 				DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
 				DNSAnnotationMode:      "opt-in",
-				DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+				DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 			},
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "pod",
-					Annotations: map[string]string{"ndots.hawky.dev/dns": "true"},
+					Annotations: map[string]string{"dns.hawky.dev/dns": "true"},
 				},
 				Spec: corev1.PodSpec{DNSConfig: &corev1.PodDNSConfig{}},
 			},
@@ -55,12 +55,12 @@ func TestMutator_Mutate_Annotations(t *testing.T) {
 			cfg: &config.Config{
 				DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
 				DNSAnnotationMode:      "opt-out",
-				DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
+				DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 			},
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "pod",
-					Annotations: map[string]string{"ndots.hawky.dev/dns": "false"},
+					Annotations: map[string]string{"dns.hawky.dev/dns": "false"},
 				},
 				Spec: corev1.PodSpec{DNSConfig: &corev1.PodDNSConfig{}},
 			},

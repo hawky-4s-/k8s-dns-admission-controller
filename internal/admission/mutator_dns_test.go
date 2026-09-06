@@ -40,8 +40,8 @@ func newMutatorWithSpec(t *testing.T, spec DNSSpec) *Mutator {
 	t.Helper()
 	cfg := &config.Config{
 		DNSAnnotationMode:     "always",
-		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+		SpecAnnotationKey:     "dns.hawky.dev/dns-config",
+		StrategyAnnotationKey: "dns.hawky.dev/dns-strategy",
 		DNSStrategy:           string(spec.Strategy),
 	}
 	m := NewMutator(cfg, slog.Default())
@@ -232,8 +232,8 @@ func TestMutator_DNS_AnnotationOverlay(t *testing.T) {
 	cfg := &config.Config{
 		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
 		DNSAnnotationMode:     "always",
-		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
-		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
+		SpecAnnotationKey:     "dns.hawky.dev/dns-config",
+		StrategyAnnotationKey: "dns.hawky.dev/dns-strategy",
 		DNSStrategy:           "merge",
 	}
 	m := NewMutator(cfg, slog.Default())
@@ -241,7 +241,7 @@ func TestMutator_DNS_AnnotationOverlay(t *testing.T) {
 	t.Run("annotation overlay overrides global ndots", func(t *testing.T) {
 		pod := &corev1.Pod{}
 		pod.Annotations = map[string]string{
-			"ndots.hawky.dev/dns-config": `{"options":[{"name":"ndots","value":"4"}]}`,
+			"dns.hawky.dev/dns-config": `{"options":[{"name":"ndots","value":"4"}]}`,
 		}
 		got := mutateAndApply(t, m, pod)
 		require.NotNil(t, got.Spec.DNSConfig)
@@ -255,7 +255,7 @@ func TestMutator_DNS_AnnotationOverlay(t *testing.T) {
 			Options: []corev1.PodDNSConfigOption{{Name: "ndots", Value: strPtr("2")}},
 		}}}
 		pod.Annotations = map[string]string{
-			"ndots.hawky.dev/dns-strategy": "unset",
+			"dns.hawky.dev/dns-strategy": "unset",
 		}
 		got := mutateAndApply(t, m, pod)
 		assert.Equal(t, -1, findOptionIndex(got.Spec.DNSConfig.Options, "ndots"))
@@ -264,7 +264,7 @@ func TestMutator_DNS_AnnotationOverlay(t *testing.T) {
 	t.Run("malformed annotation falls back to default (fail-open)", func(t *testing.T) {
 		pod := &corev1.Pod{}
 		pod.Annotations = map[string]string{
-			"ndots.hawky.dev/dns-config": `{not valid`,
+			"dns.hawky.dev/dns-config": `{not valid`,
 		}
 		patches, err := m.Mutate(pod)
 		require.NoError(t, err)
