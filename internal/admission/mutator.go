@@ -24,7 +24,7 @@ func NewMutator(cfg *config.Config, logger *slog.Logger) *Mutator {
 		defaultSpec:           DefaultDNSSpecFromConfig(cfg),
 		specAnnotationKey:     cfg.SpecAnnotationKey,
 		strategyAnnotationKey: cfg.StrategyAnnotationKey,
-		annotationChecker:     NewAnnotationChecker(cfg.AnnotationKey, cfg.AnnotationMode),
+		annotationChecker:     NewAnnotationChecker(cfg.DNSEnableAnnotationKey, cfg.DNSAnnotationMode),
 		namespaceFilter:       NewNamespaceFilter(cfg.NamespaceInclude, cfg.NamespaceExclude, logger),
 		logger:                logger,
 	}

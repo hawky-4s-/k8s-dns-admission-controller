@@ -24,9 +24,9 @@ func TestMutator_Mutate_Annotations(t *testing.T) {
 		{
 			name: "opt-in mode: no annotation -> no patch",
 			cfg: &config.Config{
-				NdotsValue:     2,
-				AnnotationMode: "opt-in",
-				AnnotationKey:  "ndots",
+				DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+				DNSAnnotationMode:      "opt-in",
+				DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
 			},
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{Name: "pod"},
@@ -37,14 +37,14 @@ func TestMutator_Mutate_Annotations(t *testing.T) {
 		{
 			name: "opt-in mode: with annotation -> patch",
 			cfg: &config.Config{
-				NdotsValue:     2,
-				AnnotationMode: "opt-in",
-				AnnotationKey:  "ndots",
+				DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+				DNSAnnotationMode:      "opt-in",
+				DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
 			},
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "pod",
-					Annotations: map[string]string{"ndots": "true"},
+					Annotations: map[string]string{"ndots.hawky.dev/dns": "true"},
 				},
 				Spec: corev1.PodSpec{DNSConfig: &corev1.PodDNSConfig{}},
 			},
@@ -53,14 +53,14 @@ func TestMutator_Mutate_Annotations(t *testing.T) {
 		{
 			name: "opt-out mode: false annotation -> no patch",
 			cfg: &config.Config{
-				NdotsValue:     2,
-				AnnotationMode: "opt-out",
-				AnnotationKey:  "ndots",
+				DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
+				DNSAnnotationMode:      "opt-out",
+				DNSEnableAnnotationKey: "ndots.hawky.dev/dns",
 			},
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "pod",
-					Annotations: map[string]string{"ndots": "false"},
+					Annotations: map[string]string{"ndots.hawky.dev/dns": "false"},
 				},
 				Spec: corev1.PodSpec{DNSConfig: &corev1.PodDNSConfig{}},
 			},

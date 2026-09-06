@@ -83,9 +83,9 @@ func ParseDNSSpecAnnotation(raw string) (DNSSpec, error) {
 	}, nil
 }
 
-// DefaultDNSSpecFromConfig builds the operator-configured default DNS spec.
-// The ndots value is always seeded as an option named "ndots" unless the
-// configured options already include one, preserving backward compatibility.
+// DefaultDNSSpecFromConfig builds the operator-configured default DNS spec from
+// the DNS_* settings. With no DNS settings configured, the resulting spec is
+// empty and the mutator produces no patches (no-op default).
 func DefaultDNSSpecFromConfig(cfg *config.Config) DNSSpec {
 	strategy, err := ParseStrategy(cfg.DNSStrategy)
 	if err != nil {
@@ -93,22 +93,14 @@ func DefaultDNSSpecFromConfig(cfg *config.Config) DNSSpec {
 		strategy = StrategyMerge
 	}
 
-	options := make([]corev1.PodDNSConfigOption, 0, len(cfg.DNSOptions)+1)
-	hasNdots := false
+	options := make([]corev1.PodDNSConfigOption, 0, len(cfg.DNSOptions))
 	for _, o := range cfg.DNSOptions {
 		opt := corev1.PodDNSConfigOption{Name: o.Name}
 		if o.Value != "" {
 			v := o.Value
 			opt.Value = &v
 		}
-		if o.Name == "ndots" {
-			hasNdots = true
-		}
 		options = append(options, opt)
-	}
-	if !hasNdots {
-		v := fmt.Sprintf("%d", cfg.NdotsValue)
-		options = append(options, corev1.PodDNSConfigOption{Name: "ndots", Value: &v})
 	}
 
 	spec := DNSSpec{

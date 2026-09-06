@@ -39,8 +39,7 @@ func applyPatches(t *testing.T, pod *corev1.Pod, patches []PatchOperation) *core
 func newMutatorWithSpec(t *testing.T, spec DNSSpec) *Mutator {
 	t.Helper()
 	cfg := &config.Config{
-		NdotsValue:            2,
-		AnnotationMode:        "always",
+		DNSAnnotationMode:     "always",
 		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
 		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
 		DNSStrategy:           string(spec.Strategy),
@@ -231,8 +230,8 @@ func TestMutator_DNS_Policy(t *testing.T) {
 
 func TestMutator_DNS_AnnotationOverlay(t *testing.T) {
 	cfg := &config.Config{
-		NdotsValue:            2,
-		AnnotationMode:        "always",
+		DNSOptions:            []config.DNSOption{{Name: "ndots", Value: "2"}},
+		DNSAnnotationMode:     "always",
 		SpecAnnotationKey:     "ndots.hawky.dev/dns-config",
 		StrategyAnnotationKey: "ndots.hawky.dev/dns-strategy",
 		DNSStrategy:           "merge",
