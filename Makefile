@@ -88,6 +88,8 @@ deploy: kind-context kind-load
 		--set image.repository=k8s-ndots-admission-controller \
 		--set image.tag=latest \
 		--set logging.level=debug \
+		--set 'dns.options[0].name=ndots' \
+		--set 'dns.options[0].value=2' \
 		--wait
 
 # Undeploy from kind
