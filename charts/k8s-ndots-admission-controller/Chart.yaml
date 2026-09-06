@@ -2,8 +2,8 @@ apiVersion: v2
 name: k8s-ndots-admission-controller
 description: A Helm chart for deploying the ndots Kubernetes Mutating Admission Webhook
 type: application
-version: 1.0.2
-appVersion: "1.0.2"
+version: 2.0.0
+appVersion: "2.0.0"
 keywords:
   - kubernetes
   - admission-controller

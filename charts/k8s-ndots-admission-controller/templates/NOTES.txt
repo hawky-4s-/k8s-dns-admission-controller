@@ -15,10 +15,9 @@
 {{- end }}
 
 2. The webhook is configured with:
-   - ndots value: {{ .Values.ndots.value }}
-   - Annotation key: {{ .Values.ndots.annotationKey }}
-   - Annotation mode: {{ .Values.ndots.annotationMode }}
    - DNS strategy: {{ .Values.dns.strategy }}
+   - Annotation mode: {{ .Values.dns.annotationMode }}
+   - Enable annotation: {{ .Values.dns.enableAnnotationKey }}
    {{- if .Values.dns.policy }}
    - DNS policy: {{ .Values.dns.policy }}
    {{- end }}
@@ -28,8 +27,18 @@
    {{- if .Values.dns.searches }}
    - DNS searches: {{ .Values.dns.searches | join ", " }}
    {{- end }}
+   {{- if .Values.dns.options }}
+   - DNS options: {{ include "k8s-ndots-admission-controller.dnsOptionsCSV" . }}
+   {{- end }}
    - DNS spec annotation: {{ .Values.dns.annotationKey }}
    - DNS strategy annotation: {{ .Values.dns.strategyAnnotationKey }}
+
+   {{- if eq .Values.dns.annotationMode "opt-out" }}
+   Every in-scope pod is mutated unless it carries the annotation
+   "{{ .Values.dns.enableAnnotationKey }}: \"false\"".
+   {{- else if eq .Values.dns.annotationMode "opt-in" }}
+   Only pods carrying "{{ .Values.dns.enableAnnotationKey }}: \"true\"" are mutated.
+   {{- end }}
 
    Per-pod override: attach a full DNS spec (JSON or YAML) via the
    "{{ .Values.dns.annotationKey }}" annotation to overlay these defaults,
