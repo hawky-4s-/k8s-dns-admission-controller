@@ -22,28 +22,31 @@ commonAnnotations: {}
 # Common labels to add to all resources
 commonLabels: {}
 
-# ndots webhook configuration
-ndots:
-  # The ndots value to set on pods
-  value: 2
-  # Annotation key to check for opt-in/opt-out
-  annotationKey: "change-ndots"
-  # Mode: "always", "opt-in", or "opt-out"
-  annotationMode: "opt-out"
-
-# Full DNS settings management (in addition to ndots).
+# DNS settings management.
 #
-# The webhook seeds an "ndots" option from ndots.value above; dns.* lets you
-# manage every other pod DNS field. The strategy controls how managed values
-# combine with what the pod already declares:
+# The webhook applies the settings below to every in-scope pod. Nothing is
+# managed out of the box: with dns.nameservers/searches/options/policy all
+# empty, the webhook is a no-op. To manage the classic ndots value, add it as
+# an ordinary option (see dns.options below).
+#
+# The strategy controls how managed values combine with what the pod already
+# declares:
 #   merge    - add/update managed keys, leave the pod's other DNS settings
-#              (union for nameservers/searches). Default; matches legacy ndots.
+#              (union for nameservers/searches). Default.
 #   update   - only change a field/option that is already present on the pod.
 #   unset    - remove the managed options/fields from the pod.
 #   override - replace the whole managed field with the configured value.
 dns:
   # Default strategy: merge, update, unset, or override.
   strategy: "merge"
+  # Gate which pods the webhook mutates, via a pod annotation:
+  #   always  - mutate every in-scope pod (ignore the annotation).
+  #   opt-in  - mutate only pods carrying enableAnnotationKey: "true".
+  #   opt-out - mutate every in-scope pod unless it carries
+  #             enableAnnotationKey: "false". Default.
+  annotationMode: "opt-out"
+  # Annotation key consulted for opt-in/opt-out gating.
+  enableAnnotationKey: "dns.hawky.dev/dns"
   # Top-level pod dnsPolicy: "" (leave unmanaged), None, ClusterFirst,
   # ClusterFirstWithHostNet, or Default. Note: None requires at least one
   # nameserver; the webhook skips the change (and logs) rather than emit a
@@ -53,9 +56,12 @@ dns:
   nameservers: []
   # dnsConfig.searches to apply (list of search domains).
   searches: []
-  # Additional dnsConfig.options beyond ndots. Values are strings and must be
-  # quoted. Use an option without a value (omit "value") for flags like edns0.
+  # dnsConfig.options to apply. Values are strings and must be quoted. Use an
+  # option without a value (omit "value") for flags like edns0. Set the classic
+  # ndots value here, e.g.:
   # options:
+  #   - name: ndots
+  #     value: "2"
   #   - name: edns0
   #   - name: timeout
   #     value: "1"

@@ -61,14 +61,16 @@ spec:
               value: "/certs/tls.crt"
             - name: TLS_KEY_PATH
               value: "/certs/tls.key"
-            - name: NDOTS_VALUE
-              value: {{ .Values.ndots.value | quote }}
-            - name: ANNOTATION_KEY
-              value: {{ .Values.ndots.annotationKey | quote }}
-            - name: ANNOTATION_MODE
-              value: {{ .Values.ndots.annotationMode | quote }}
             - name: DNS_STRATEGY
               value: {{ .Values.dns.strategy | quote }}
+            {{- if .Values.dns.annotationMode }}
+            - name: DNS_ANNOTATION_MODE
+              value: {{ .Values.dns.annotationMode | quote }}
+            {{- end }}
+            {{- if .Values.dns.enableAnnotationKey }}
+            - name: DNS_ANNOTATION_KEY
+              value: {{ .Values.dns.enableAnnotationKey | quote }}
+            {{- end }}
             {{- if .Values.dns.policy }}
             - name: DNS_POLICY
               value: {{ .Values.dns.policy | quote }}
