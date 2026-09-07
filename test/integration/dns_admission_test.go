@@ -11,10 +11,10 @@ import (
 	"os"
 	"testing"
 
-	jsonpatch "gopkg.in/evanphx/json-patch.v4"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	jsonpatch "gopkg.in/evanphx/json-patch.v4"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

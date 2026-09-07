@@ -183,17 +183,17 @@ func TestIntegration_FullAdmissionFlow(t *testing.T) {
 //
 // Scenario:
 //
-//	     ┌─── req 1  ──┐
-//	     ├─── req 2  ──┤
-//	     ├─── req 3  ──┤
-//	     ├─── req 4  ──┤
-//	     ├─── req 5  ──┤──────>  ┌──────-────┐  ──────>  all 10 return
-//	     ├─── req 6  ──┤         │  Webhook  │           HTTP 200
-//	     ├─── req 7  ──┤         │  Handler  │           ✅ thread-safe
-//	     ├─── req 8  ──┤         └─────-─────┘
-//	     ├─── req 9  ──┤
-//	     └─── req 10 ──┘
-//	      (goroutines)
+//	┌─── req 1  ──┐
+//	├─── req 2  ──┤
+//	├─── req 3  ──┤
+//	├─── req 4  ──┤
+//	├─── req 5  ──┤──────>  ┌──────-────┐  ──────>  all 10 return
+//	├─── req 6  ──┤         │  Webhook  │           HTTP 200
+//	├─── req 7  ──┤         │  Handler  │           ✅ thread-safe
+//	├─── req 8  ──┤         └─────-─────┘
+//	├─── req 9  ──┤
+//	└─── req 10 ──┘
+//	 (goroutines)
 func TestIntegration_ConcurrentAdmissions(t *testing.T) {
 	cfg := &config.Config{
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "1"}},
@@ -596,7 +596,7 @@ func TestIntegration_NamespaceMutationAcrossScenarios(t *testing.T) {
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
 		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
-		NamespaceExclude: []string{"kube-system", "kube-public", "kube-node-lease"},
+		NamespaceExclude:       []string{"kube-system", "kube-public", "kube-node-lease"},
 	}
 
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
@@ -876,7 +876,7 @@ func TestIntegration_HandlerNamespaceResolution(t *testing.T) {
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
 		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
-		NamespaceExclude: []string{"kube-system", "kube-public", "kube-node-lease"},
+		NamespaceExclude:       []string{"kube-system", "kube-public", "kube-node-lease"},
 	}
 
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
@@ -1105,7 +1105,7 @@ func TestIntegration_NamespaceExclusion(t *testing.T) {
 		DNSOptions:             []config.DNSOption{{Name: "ndots", Value: "2"}},
 		DNSEnableAnnotationKey: "dns.hawky.dev/dns",
 		DNSAnnotationMode:      "opt-out",
-		NamespaceExclude: []string{"kube-system", "kube-public"},
+		NamespaceExclude:       []string{"kube-system", "kube-public"},
 	}
 
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))

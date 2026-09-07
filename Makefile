@@ -8,7 +8,7 @@ TOOLS_IMG ?= ndots-test-tools
 TMP_DIR ?= $(PWD)/tmp
 KUBECONFIG ?= $(TMP_DIR)/config
 
-LINT_IMG ?= golangci/golangci-lint:v2.7.2
+LINT_IMG ?= golangci/golangci-lint:v2.13.2
 
 # Dockerized commands
 # We need --network host for kind to access the cluster if needed, and docker socket

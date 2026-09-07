@@ -515,7 +515,7 @@ func TestE2E_DebugLogs(t *testing.T) {
 			// We configured LOG_LEVEL=debug in values.yaml
 
 			if strings.Contains(strings.ToUpper(logs), "\"LEVEL\":\"DEBUG\"") ||
-			   strings.Contains(strings.ToUpper(logs), "LEVEL=DEBUG") {
+				strings.Contains(strings.ToUpper(logs), "LEVEL=DEBUG") {
 				foundDebugLog = true
 				break
 			}
