@@ -11,11 +11,11 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/admission"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/config"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/logging"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/metrics"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/server"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/admission"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/config"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/logging"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/metrics"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/server"
 )
 
 func main() {

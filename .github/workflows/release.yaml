@@ -50,7 +50,7 @@ jobs:
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
           images: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/k8s-ndots-admission-controller
+            ${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -78,14 +78,14 @@ jobs:
 
       - name: Sign image with cosign (keyless)
         env:
-          IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/k8s-ndots-admission-controller
+          IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller
           DIGEST: ${{ steps.build.outputs.digest }}
         run: cosign sign --yes "${IMAGE}@${DIGEST}"
 
       - name: Generate SBOM (SPDX)
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
-          image: ${{ secrets.DOCKERHUB_USERNAME }}/k8s-ndots-admission-controller@${{ steps.build.outputs.digest }}
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller@${{ steps.build.outputs.digest }}
           format: spdx-json
           output-file: sbom.spdx.json
 
@@ -97,7 +97,7 @@ jobs:
       - name: Attest SBOM
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          subject-name: index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/k8s-ndots-admission-controller
+          subject-name: index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller
           subject-digest: ${{ steps.build.outputs.digest }}
           sbom-path: sbom.spdx.json
           push-to-registry: true
@@ -105,7 +105,7 @@ jobs:
       - name: Attest build provenance
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          subject-name: index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/k8s-ndots-admission-controller
+          subject-name: index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
 
@@ -146,12 +146,12 @@ jobs:
 
             ## Image
 
-            `${{ secrets.DOCKERHUB_USERNAME }}/k8s-ndots-admission-controller@${{ needs.build-and-push.outputs.digest }}`
+            `${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller@${{ needs.build-and-push.outputs.digest }}`
 
             Verify the signature:
 
             ```sh
-            cosign verify ${{ secrets.DOCKERHUB_USERNAME }}/k8s-ndots-admission-controller@${{ needs.build-and-push.outputs.digest }} \
+            cosign verify ${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller@${{ needs.build-and-push.outputs.digest }} \
               --certificate-identity-regexp 'https://github.com/${{ github.repository }}/.+' \
               --certificate-oidc-issuer 'https://token.actions.githubusercontent.com'
             ```

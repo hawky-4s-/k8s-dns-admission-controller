@@ -19,9 +19,9 @@ Implement Prometheus metrics for monitoring webhook performance and mutation sta
 
 | Metric | Type | Labels | Description |
 |--------|------|--------|-------------|
-| `ndots_webhook_mutations_total` | Counter | namespace, action | Total mutations |
-| `ndots_webhook_errors_total` | Counter | type | Total errors |
-| `ndots_webhook_request_duration_seconds` | Histogram | | Request latency |
+| `dns_webhook_mutations_total` | Counter | namespace, action | Total mutations |
+| `dns_webhook_errors_total` | Counter | type | Total errors |
+| `dns_webhook_request_duration_seconds` | Histogram | | Request latency |
 
 ## Acceptance Criteria
 

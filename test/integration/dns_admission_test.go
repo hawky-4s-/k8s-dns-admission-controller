@@ -20,10 +20,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/admission"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/config"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/logging"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/metrics"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/admission"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/config"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/logging"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/metrics"
 )
 
 // mutateAndApplyPod sends the pod through the real handler stack and applies the

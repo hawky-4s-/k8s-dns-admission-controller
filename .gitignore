@@ -34,7 +34,7 @@ go.work.sum
 bin/
 tmp/
 # Built binary at repo root (anchored to avoid matching the chart dir of the same name)
-/k8s-ndots-admission-controller
+/k8s-dns-admission-controller
 
 # Auto Claude data directory
 .auto-claude/

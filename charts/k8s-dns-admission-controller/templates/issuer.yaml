@@ -2,10 +2,10 @@
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: {{ include "k8s-ndots-admission-controller.issuerName" . }}
+  name: {{ include "k8s-dns-admission-controller.issuerName" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "k8s-ndots-admission-controller.labels" . | nindent 4 }}
+    {{- include "k8s-dns-admission-controller.labels" . | nindent 4 }}
 spec:
   selfSigned: {}
 {{- end }}

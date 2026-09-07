@@ -7,7 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/config"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/config"
 )
 
 // Strategy controls how managed DNS settings are applied to a pod.

@@ -1,6 +1,6 @@
 # AGENTS.md - AI Agent Guidelines
 
-This document provides context and guidelines for AI agents working on the k8s-ndots-admission-controller project.
+This document provides context and guidelines for AI agents working on the k8s-dns-admission-controller project.
 
 ## Project Overview
 
@@ -278,11 +278,11 @@ make build
 make run
 
 # Build container image
-make docker-build IMG=<registry>/k8s-ndots-admission-controller:dev
+make docker-build IMG=<registry>/k8s-dns-admission-controller:dev
 
 # Deploy to local kind cluster
 make kind-create
-make kind-load IMG=<registry>/k8s-ndots-admission-controller:dev
+make kind-load IMG=<registry>/k8s-dns-admission-controller:dev
 make deploy
 
 # Run linting
@@ -305,7 +305,7 @@ make certs
 ### Debugging
 
 - Set `LOG_LEVEL=debug` environment variable for verbose logging
-- Use `kubectl logs -f deployment/k8s-ndots-admission-controller` to follow logs
+- Use `kubectl logs -f deployment/k8s-dns-admission-controller` to follow logs
 - Check webhook configuration: `kubectl get mutatingwebhookconfiguration`
 
 ---
@@ -353,7 +353,7 @@ The mutating webhook intercepts Pod creation and updates:
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: k8s-ndots-admission-controller
+  name: k8s-dns-admission-controller
 webhooks:
   - name: ndots.admission.k8s.io
     rules:
@@ -363,8 +363,8 @@ webhooks:
         resources: ["pods"]
     clientConfig:
       service:
-        name: k8s-ndots-admission-controller
-        namespace: ndots-system
+        name: k8s-dns-admission-controller
+        namespace: dns-system
         path: /mutate
     admissionReviewVersions: ["v1"]
     sideEffects: None

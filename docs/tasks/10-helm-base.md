@@ -10,7 +10,7 @@ Create the base Helm chart structure with Deployment, Service, RBAC, and configu
 
 ## Deliverables
 
-- [ ] Chart structure in `charts/k8s-ndots-admission-controller/`
+- [ ] Chart structure in `charts/k8s-dns-admission-controller/`
 - [ ] `Chart.yaml` with metadata
 - [ ] `values.yaml` with all configuration
 - [ ] Deployment template
@@ -20,7 +20,7 @@ Create the base Helm chart structure with Deployment, Service, RBAC, and configu
 ## Chart Structure
 
 ```
-charts/k8s-ndots-admission-controller/
+charts/k8s-dns-admission-controller/
 ├── Chart.yaml
 ├── values.yaml
 ├── templates/

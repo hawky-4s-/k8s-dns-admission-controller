@@ -32,7 +32,7 @@ Initialize the Go project with proper structure, build tooling, and containeriza
 ├── deploy/
 │   └── kubernetes/           # Raw manifests (for development)
 ├── charts/
-│   └── k8s-ndots-admission-controller/        # Helm chart
+│   └── k8s-dns-admission-controller/        # Helm chart
 ├── scripts/
 │   └── generate-certs.sh     # TLS cert generation for dev
 ├── test/
@@ -100,7 +100,7 @@ ENTRYPOINT ["/webhook"]
 ### Go Module
 
 ```bash
-go mod init github.com/<org>/k8s-ndots-admission-controller
+go mod init github.com/<org>/k8s-dns-admission-controller
 ```
 
 ### Dependencies to Add

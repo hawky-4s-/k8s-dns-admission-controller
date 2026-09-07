@@ -43,7 +43,7 @@ Integration tests in a dev cluster: ** Pods created via Deployment, StatefulSet,
 Failure handling: webhook down, confirm {{failurePolicy}} behavior.
 h3. Deliverables
 
-Source code repository with: ** Controller implementation and Dockerfile. ** Helm chart (e.g., {{charts/k8s-ndots-admission-controller}}) with {{values.yaml}} and templates for Deployment, Service, MutatingWebhookConfiguration, RBAC, certs. ** README with usage, configuration, and examples. ** CI workflow to build/push image and run tests.
+Source code repository with: ** Controller implementation and Dockerfile. ** Helm chart (e.g., {{charts/k8s-dns-admission-controller}}) with {{values.yaml}} and templates for Deployment, Service, MutatingWebhookConfiguration, RBAC, certs. ** README with usage, configuration, and examples. ** CI workflow to build/push image and run tests.
 Container image published to agreed registry.
 h3. Acceptance criteria
 
