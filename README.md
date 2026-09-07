@@ -33,21 +33,27 @@ A Mutating Admission Controller that manages DNS settings in `Pod.spec.dnsConfig
 
 ### Install with Helm
 
-1. Add the repository (if applicable) or clone this repo:
-   ```bash
-   git clone https://github.com/hawky-4s-/k8s-dns-admission-controller.git
-   cd k8s-dns-admission-controller
-   ```
+Add the Helm repository (published to GitHub Pages via
+[chart-releaser](https://github.com/helm/chart-releaser-action)):
 
-2. Install the chart. Nothing is managed out of the box — configure at least one
-   DNS setting. To set the classic `ndots` value, add it as an option:
-   ```bash
-   helm upgrade --install ndots ./charts/k8s-dns-admission-controller \
-     --namespace dns-system \
-     --create-namespace \
-     --set 'dns.options[0].name=ndots' \
-     --set 'dns.options[0].value=2'
-   ```
+```bash
+helm repo add k8s-dns https://hawky-4s-.github.io/k8s-dns-admission-controller
+helm repo update
+```
+
+Install the chart. Nothing is managed out of the box — configure at least one
+DNS setting. To set the classic `ndots` value, add it as an option:
+
+```bash
+helm upgrade --install ndots k8s-dns/k8s-dns-admission-controller \
+  --namespace dns-system \
+  --create-namespace \
+  --set 'dns.options[0].name=ndots' \
+  --set 'dns.options[0].value=2'
+```
+
+Alternatively, install from a local checkout by pointing at
+`./charts/k8s-dns-admission-controller` instead of `k8s-dns/k8s-dns-admission-controller`.
 
 ## Configuration
 

@@ -1,0 +1,6 @@
+# chart-testing (ct) configuration
+# https://github.com/helm/chart-testing
+target-branch: main
+chart-dirs:
+  - charts
+validate-maintainers: true
