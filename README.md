@@ -51,101 +51,194 @@ A Mutating Admission Controller that manages DNS settings in `Pod.spec.dnsConfig
 
 ## Configuration
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `dns.strategy` | How managed DNS settings combine: `merge`, `update`, `unset`, `override` | `merge` |
-| `dns.annotationMode` | Gate: `always`, `opt-in`, `opt-out` | `opt-out` |
-| `dns.enableAnnotationKey` | Pod annotation consulted for opt-in/opt-out gating | `dns.hawky.dev/dns` |
-| `dns.policy` | Pod `dnsPolicy` to set (`""` = leave alone) | `""` |
-| `dns.nameservers` | `dnsConfig.nameservers` to apply | `[]` |
-| `dns.searches` | `dnsConfig.searches` to apply | `[]` |
-| `dns.options` | `dnsConfig.options` to apply, including `ndots` | `[]` |
-| `dns.annotationKey` | Pod annotation carrying a full DNS spec (JSON/YAML) | `dns.hawky.dev/dns-config` |
-| `dns.strategyAnnotationKey` | Pod annotation overriding the strategy per pod | `dns.hawky.dev/dns-strategy` |
-| `namespace.exclude` | List of namespaces to ignore | `[kube-system, kube-public, kube-node-lease]` |
-| `tls.useCertManager` | Use cert-manager for TLS | `true` |
+The webhook is configured entirely through environment variables (or, when deployed via Helm,
+through `values.yaml`). Every env var has a corresponding Helm key; the table below lists both.
 
-### Mutation gate
+**Nothing is managed out of the box.** With no DNS settings configured, the webhook is a no-op and
+admits every pod unchanged. You must configure at least one DNS setting to have the webhook do
+anything.
 
-- **opt-out** (Default): in-scope pods are mutated automatically. To skip a pod, add:
-  ```yaml
-  metadata:
-    annotations:
-      dns.hawky.dev/dns: "false"
-  ```
-- **opt-in**: no mutations happen by default. To enable for a pod, add:
-  ```yaml
-  metadata:
-    annotations:
-      dns.hawky.dev/dns: "true"
-  ```
+### DNS settings
 
-## DNS settings
+These control *what* the webhook writes into `Pod.spec.dnsConfig` and `Pod.spec.dnsPolicy`.
 
-The webhook can manage every pod DNS field: `dnsConfig.options` (any named
-option, including `ndots`), `dnsConfig.nameservers`, `dnsConfig.searches`, and
-the top-level `dnsPolicy`. `ndots` is not special-cased — set it like any other
-option. With no settings configured, the webhook is a no-op.
+| Helm key | Env var | Default | Description |
+|----------|---------|---------|-------------|
+| `dns.options` | `DNS_OPTIONS` | `[]` / `""` | `dnsConfig.options` entries to apply. In Helm: a list of `{name, value}` objects — omit `value` for boolean flags. In env: a comma-separated `name=value` string (e.g. `ndots=2,edns0`). `ndots` is just another option here — there is no special `ndots.value` key. |
+| `dns.nameservers` | `DNS_NAMESERVERS` | `[]` / `""` | `dnsConfig.nameservers` to apply. Helm: list of IP strings. Env: comma-separated IPs. |
+| `dns.searches` | `DNS_SEARCHES` | `[]` / `""` | `dnsConfig.searches` to apply. Helm: list of domain strings. Env: comma-separated domains. |
+| `dns.policy` | `DNS_POLICY` | `""` | Pod-level `dnsPolicy` to set. Valid values: `ClusterFirst`, `ClusterFirstWithHostNet`, `Default`, `None`. Leave empty to leave `dnsPolicy` unmanaged. **Note:** `None` requires at least one nameserver; the webhook skips the change (and logs a warning) if the effective pod would have none. |
 
-### Strategies
+#### Setting `ndots`
 
-A strategy decides how the managed settings combine with what a pod already
-declares:
+`ndots` is an ordinary `dnsConfig.option` — set it the same way as any other option:
+
+```yaml
+# values.yaml
+dns:
+  options:
+    - name: ndots
+      value: "2"    # values must always be quoted strings
+```
+
+```bash
+# or via --set
+--set 'dns.options[0].name=ndots' --set 'dns.options[0].value=2'
+```
+
+```bash
+# or via env var
+DNS_OPTIONS=ndots=2
+```
+
+### Combine strategy
+
+The strategy controls how the webhook's managed settings interact with whatever the pod *already*
+declares in its own spec. Set a cluster-wide default; override it per pod with an annotation.
+
+| Helm key | Env var | Default |
+|----------|---------|---------|
+| `dns.strategy` | `DNS_STRATEGY` | `merge` |
 
 | Strategy | Behavior |
 |----------|----------|
-| `merge` (default) | Add/update managed options; union nameservers and searches; leave everything else. |
-| `update` | Only change a field or option that is **already present** on the pod. |
-| `unset` | Remove the managed options/fields from the pod. |
-| `override` | Replace the whole managed field with the configured value. |
+| `merge` | **Default.** For `options`: add any missing option; update the value of an existing one. For `nameservers` and `searches`: union the managed list with the pod's existing list (no duplicates). Leaves all other DNS settings on the pod untouched. |
+| `update` | Only modify an option/field that is **already present** on the pod. If the pod has no `ndots` option, `merge` would add it — `update` would not. Useful for normalising pods that already configure DNS without imposing settings on pods that don't. |
+| `unset` | **Remove** the managed options/fields from the pod. Use to enforce that certain options are absent. |
+| `override` | Replace the **entire** managed field with the configured value, discarding whatever the pod declared. For `options`, this means the pod ends up with exactly the configured list and nothing else. |
 
-Set the default strategy globally via `dns.strategy` (Helm) / `DNS_STRATEGY`
-(env), or per pod via the strategy annotation.
+### Mutation gate
 
-### Global configuration (Helm / env)
+The gate decides *which* pods the webhook touches. Configure cluster-wide with
+`dns.annotationMode` / `DNS_ANNOTATION_MODE`; the annotation key can be changed with
+`dns.enableAnnotationKey` / `DNS_ANNOTATION_KEY`.
+
+| Helm key | Env var | Default |
+|----------|---------|---------|
+| `dns.annotationMode` | `DNS_ANNOTATION_MODE` | `opt-out` |
+| `dns.enableAnnotationKey` | `DNS_ANNOTATION_KEY` | `dns.hawky.dev/dns` |
+
+| Mode | Behavior |
+|------|----------|
+| `opt-out` | **Default.** Every in-scope pod is mutated unless it carries the annotation `dns.hawky.dev/dns: "false"`. |
+| `opt-in` | No pod is mutated unless it carries the annotation `dns.hawky.dev/dns: "true"`. Useful when you want to enable DNS management only for specific workloads. |
+| `always` | Every in-scope pod is mutated, regardless of annotations. The annotation has no effect. |
 
 ```yaml
-dns:
-  strategy: merge
-  nameservers: ["10.0.0.10"]
-  searches: ["svc.cluster.local"]
-  options:
-    - name: edns0        # a flag (no value)
-    - name: timeout
-      value: "1"         # values are strings — quote them
+# Opt a single pod out (opt-out mode):
+metadata:
+  annotations:
+    dns.hawky.dev/dns: "false"
+
+# Opt a single pod in (opt-in mode):
+metadata:
+  annotations:
+    dns.hawky.dev/dns: "true"
 ```
 
-### Per-pod overrides (annotations)
+### Per-pod annotation overrides
 
-Attach a full DNS spec — JSON or YAML, HashiCorp Vault agent-injector style —
-that overlays the global default for that pod:
+Two annotations let individual pods deviate from the cluster-wide configuration without changing
+any global setting.
+
+| Annotation | Helm key (key name only) | Env var | Default | Description |
+|------------|--------------------------|---------|---------|-------------|
+| `dns.hawky.dev/dns-config` | `dns.annotationKey` | `DNS_SPEC_ANNOTATION_KEY` | `dns.hawky.dev/dns-config` | A full DNS spec in JSON or YAML. Merged on top of the cluster-wide default for this pod only. |
+| `dns.hawky.dev/dns-strategy` | `dns.strategyAnnotationKey` | `DNS_STRATEGY_ANNOTATION_KEY` | `dns.hawky.dev/dns-strategy` | Overrides `dns.strategy` for this pod only. Accepts the same values: `merge`, `update`, `unset`, `override`. |
+
+The DNS spec annotation accepts JSON or YAML (HashiCorp Vault agent-injector style). Any field
+you omit falls back to the cluster-wide default. Option values must be quoted strings.
 
 ```yaml
 metadata:
   annotations:
-    # JSON or YAML both work; option values must be quoted strings.
     dns.hawky.dev/dns-config: |
-      nameservers: ["1.1.1.1"]
-      searches: ["team.svc.cluster.local"]
       options:
         - name: ndots
-          value: "3"
-    # Optionally change the strategy just for this pod.
-    dns.hawky.dev/dns-strategy: override
+          value: "5"          # override ndots for this pod only
+        - name: edns0         # add a flag option
+      searches:
+        - team.svc.cluster.local
+    dns.hawky.dev/dns-strategy: override   # replace, don't merge
 ```
 
-### Runtime safety
+### Namespace filtering
 
-The API server remains the authoritative validator; the webhook only enforces
-the invariants needed to never emit a rejectable patch:
+| Helm key | Env var | Default |
+|----------|---------|---------|
+| `namespace.exclude` | `NAMESPACE_EXCLUDE` | `[kube-system, kube-public, kube-node-lease]` |
+| `namespace.include` | `NAMESPACE_INCLUDE` | `[]` (all non-excluded) |
 
-- **Fail-open**: a malformed spec/strategy annotation is ignored (logged) and
-  the pod is admitted with the global default — the webhook never blocks a pod
-  because of its own uncertainty.
-- **`dnsPolicy: None` guard**: `None` requires at least one nameserver, so the
-  policy change is skipped (and logged) unless the effective pod would have one.
-- Patches are well-formed and idempotent (parents created first, removals in
-  descending index order), so they are safe under `reinvocationPolicy`.
+Pods in excluded namespaces are never mutated. When `namespace.include` is non-empty, only pods in
+those namespaces are mutated (after exclusions are applied). The system namespaces
+`kube-system`, `kube-public`, and `kube-node-lease` are always excluded.
+
+### TLS
+
+| Helm key | Default | Description |
+|----------|---------|-------------|
+| `tls.useCertManager` | `true` | Use cert-manager to issue and rotate the webhook TLS certificate. |
+| `tls.certManager.duration` | `8760h` | Certificate validity (1 year). |
+| `tls.certManager.renewBefore` | `720h` | Renew 30 days before expiry. |
+| `tls.certManager.issuer.create` | `true` | Create a self-signed `Issuer` in the release namespace. |
+| `tls.certManager.issuer.name` | `""` | Use an existing issuer instead (requires `issuer.create: false`). |
+| `tls.certManager.issuer.kind` | `Issuer` | `Issuer` or `ClusterIssuer`. |
+| `TLS_CERT_PATH` (env) | `/certs/tls.crt` | Path to TLS certificate (env-only, for non-Helm deployments). |
+| `TLS_KEY_PATH` (env) | `/certs/tls.key` | Path to TLS private key (env-only, for non-Helm deployments). |
+
+### Webhook behaviour
+
+| Helm key | Default | Description |
+|----------|---------|-------------|
+| `webhook.failurePolicy` | `Ignore` | `Fail` or `Ignore`. With `Ignore`, a webhook error admits the pod unchanged. With `Fail`, the pod is rejected. |
+| `webhook.timeoutSeconds` | `10` | Seconds the API server waits for a webhook response before applying `failurePolicy`. |
+| `webhook.reinvocationPolicy` | `Never` | `Never` or `IfNeeded`. Set to `IfNeeded` if other mutating webhooks run after this one and may undo its changes. |
+
+### Observability
+
+| Helm key | Env var | Default | Description |
+|----------|---------|---------|-------------|
+| `logging.level` | `LOG_LEVEL` | `info` | Log level: `debug`, `info`, `warn`, `error`. |
+| `logging.format` | `LOG_FORMAT` | `json` | Log format: `json` or `text`. |
+| `metrics.enabled` | — | `true` | Expose a Prometheus `/metrics` endpoint. |
+| `metrics.port` | `METRICS_PORT` | `8080` | Port for the metrics server. |
+| `metrics.serviceMonitor.enabled` | — | `false` | Create a Prometheus Operator `ServiceMonitor`. When `false` and `metrics.enabled` is `true`, the Service is annotated with `prometheus.io/scrape: "true"`. |
+| — | `PORT` | `8443` | Webhook HTTPS server port (env-only). |
+
+### Deployment / runtime
+
+| Helm key | Default | Description |
+|----------|---------|-------------|
+| `replicaCount` | `1` | Number of webhook pods. Use `≥2` with a PodDisruptionBudget for production. |
+| `podDisruptionBudget.enabled` | `false` | Create a `PodDisruptionBudget`. |
+| `podDisruptionBudget.minAvailable` | `1` | Minimum available pods during disruptions. |
+| `priorityClassName` | `""` | Assign a `PriorityClass` to the webhook pods. |
+| `resources.requests` | `cpu: 50m, memory: 64Mi` | Pod resource requests. |
+| `resources.limits` | `cpu: 100m, memory: 128Mi` | Pod resource limits. |
+| `nodeSelector` | `{}` | Node selector for the webhook pods. |
+| `tolerations` | `[]` | Tolerations for the webhook pods. |
+| `affinity` | `{}` | Affinity rules for the webhook pods. |
+| `imagePullSecrets` | `[]` | Image pull secrets for private registries. |
+| `serviceAccount.create` | `true` | Create a dedicated `ServiceAccount`. |
+| `serviceAccount.annotations` | `{}` | Annotations to add to the `ServiceAccount` (e.g. for IRSA). |
+| `podAnnotations` | `{}` | Annotations added to webhook pods. |
+| `podSecurityContext` | `runAsNonRoot: true, runAsUser: 65534` | Security context for the pod. |
+| `securityContext` | `allowPrivilegeEscalation: false, readOnlyRootFilesystem: true` | Security context for the container. |
+| `commonLabels` | `{}` | Extra labels added to all chart resources. |
+| `commonAnnotations` | `{}` | Extra annotations added to all chart resources. |
+
+### Runtime safety guarantees
+
+The webhook is designed to never block a pod due to its own errors:
+
+- **Fail-open**: a malformed `dns-config` or `dns-strategy` annotation is silently ignored (a
+  warning is logged) and the pod is admitted using the cluster-wide default. The webhook will never
+  reject a pod because of a bad annotation.
+- **`dnsPolicy: None` guard**: Kubernetes requires `dnsPolicy: None` pods to have at least one
+  nameserver. If the effective spec after mutation would leave the pod without nameservers, the
+  `dnsPolicy` change is skipped and logged — preventing an API server rejection.
+- **Idempotent patches**: parent paths are created before child operations; array removals are
+  emitted in descending index order. Patches are safe to re-apply under `reinvocationPolicy: IfNeeded`.
 
 ## Examples
 
@@ -166,20 +259,6 @@ spec:
         - name: app
           image: nginx
 ```
-
-## Monitoring
-
-Metrics are exposed on port `8080` at `/metrics`.
-
-If `metrics.serviceMonitor.enabled` is `false` (default), the Service is automatically annotated with:
-- `prometheus.io/scrape: "true"`
-- `prometheus.io/port: "8080"` (or configured port)
-
-| Metric | Description |
-|--------|-------------|
-| `dns_webhook_mutations_total` | Total number of pod mutations performed |
-| `dns_webhook_errors_total` | Total number of mutation errors |
-| `dns_webhook_request_duration_seconds` | Latency of admission requests |
 
 ## Development
 
