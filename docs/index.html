@@ -15,8 +15,8 @@
         <div class="container">
             <a href="#" class="logo">ndots-admission-controller</a>
             <div class="nav-links">
-                <a href="https://github.com/hawky-4s-/k8s-ndots-admission-controller" target="_blank">GitHub</a>
-                <a href="https://github.com/hawky-4s-/k8s-ndots-admission-controller/blob/main/README.md" target="_blank">Documentation</a>
+                <a href="https://github.com/hawky-4s-/k8s-dns-admission-controller" target="_blank">GitHub</a>
+                <a href="https://github.com/hawky-4s-/k8s-dns-admission-controller/blob/main/README.md" target="_blank">Documentation</a>
             </div>
         </div>
     </nav>
@@ -29,7 +29,7 @@
             </p>
             <div class="cta-group">
                 <a href="#install" class="btn btn-primary">Get Started</a>
-                <a href="https://github.com/hawky-4s-/k8s-ndots-admission-controller" class="btn btn-secondary">View Source</a>
+                <a href="https://github.com/hawky-4s-/k8s-dns-admission-controller" class="btn btn-secondary">View Source</a>
             </div>
         </div>
     </header>
@@ -59,12 +59,12 @@
             <p>Deploy using Helm in seconds.</p>
             <div class="code-block">
                 <pre><code><span class="comment"># Add the repository</span>
-helm repo add ndots https://hawky-4s-.github.io/k8s-ndots-admission-controller
+helm repo add ndots https://hawky-4s-.github.io/k8s-dns-admission-controller
 helm repo update
 
 <span class="comment"># Install the chart</span>
-helm install k8s-ndots-admission-controller ndots/k8s-ndots-admission-controller \
-  --namespace ndots-system \
+helm install k8s-dns-admission-controller ndots/k8s-dns-admission-controller \
+  --namespace dns-system \
   --create-namespace</code></pre>
             </div>
         </div>

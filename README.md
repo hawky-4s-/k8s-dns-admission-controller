@@ -1,8 +1,10 @@
-# Kubernetes ndots Admission Controller
+# Kubernetes DNS Admission Controller
 
-![CI](https://github.com/hawky-4s-/k8s-ndots-admission-controller/actions/workflows/ci.yaml/badge.svg)
-![Release](https://github.com/hawky-4s-/k8s-ndots-admission-controller/actions/workflows/release.yaml/badge.svg)
-[![codecov](https://codecov.io/gh/hawky-4s-/k8s-ndots-admission-controller/graph/badge.svg?token=CODECOV_TOKEN)](https://codecov.io/gh/hawky-4s-/k8s-ndots-admission-controller)
+![CI](https://github.com/hawky-4s-/k8s-dns-admission-controller/actions/workflows/ci.yaml/badge.svg)
+![Release](https://github.com/hawky-4s-/k8s-dns-admission-controller/actions/workflows/release.yaml/badge.svg)
+[![codecov](https://codecov.io/gh/hawky-4s-/k8s-dns-admission-controller/graph/badge.svg?token=CODECOV_TOKEN)](https://codecov.io/gh/hawky-4s-/k8s-dns-admission-controller)
+
+> **Note:** This project was formerly known as `k8s-ndots-admission-controller`. See the [Migration from v1](#migration-from-v1) section for upgrading.
 
 A Mutating Admission Controller that manages DNS settings in `Pod.spec.dnsConfig` and `Pod.spec.dnsPolicy` — including the `ndots` option, which helps improve DNS resolution performance for applications communicating with external services.
 
@@ -33,15 +35,15 @@ A Mutating Admission Controller that manages DNS settings in `Pod.spec.dnsConfig
 
 1. Add the repository (if applicable) or clone this repo:
    ```bash
-   git clone https://github.com/hawky-4s-/k8s-ndots-admission-controller.git
-   cd k8s-ndots-admission-controller
+   git clone https://github.com/hawky-4s-/k8s-dns-admission-controller.git
+   cd k8s-dns-admission-controller
    ```
 
 2. Install the chart. Nothing is managed out of the box — configure at least one
    DNS setting. To set the classic `ndots` value, add it as an option:
    ```bash
-   helm upgrade --install ndots ./charts/k8s-ndots-admission-controller \
-     --namespace ndots-system \
+   helm upgrade --install ndots ./charts/k8s-dns-admission-controller \
+     --namespace dns-system \
      --create-namespace \
      --set 'dns.options[0].name=ndots' \
      --set 'dns.options[0].value=2'
@@ -175,9 +177,9 @@ If `metrics.serviceMonitor.enabled` is `false` (default), the Service is automat
 
 | Metric | Description |
 |--------|-------------|
-| `ndots_webhook_mutations_total` | Total number of pod mutations performed |
-| `ndots_webhook_errors_total` | Total number of mutation errors |
-| `ndots_webhook_request_duration_seconds` | Latency of admission requests |
+| `dns_webhook_mutations_total` | Total number of pod mutations performed |
+| `dns_webhook_errors_total` | Total number of mutation errors |
+| `dns_webhook_request_duration_seconds` | Latency of admission requests |
 
 ## Development
 
@@ -207,6 +209,23 @@ make build
 # Build Docker image
 make docker-build
 ```
+
+## Migration from v1
+
+Upgrading from `k8s-ndots-admission-controller` v1? Two things changed:
+
+1. **Set ndots explicitly.** v1 defaulted to `ndots=2` automatically. v2 is a no-op out of the box:
+   ```bash
+   helm upgrade ... --set 'dns.options[0].name=ndots' --set 'dns.options[0].value=2'
+   ```
+
+2. **Rename the opt-out annotation.** If any pods carry the old `change-ndots: "false"` or
+   `ndots.hawky.dev/dns: "false"` annotation, rename it to:
+   ```yaml
+   dns.hawky.dev/dns: "false"
+   ```
+
+3. **Namespace.** The default install namespace changed from `ndots-system` to `dns-system`.
 
 ## License
 

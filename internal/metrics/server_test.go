@@ -95,6 +95,6 @@ func TestServer_ServesMetrics(t *testing.T) {
 	bodyStr := string(body)
 
 	// Verify metrics are present
-	assert.Contains(t, bodyStr, "ndots_webhook_mutations_total")
-	assert.Contains(t, bodyStr, "ndots_webhook_errors_total")
+	assert.Contains(t, bodyStr, "dns_webhook_mutations_total")
+	assert.Contains(t, bodyStr, "dns_webhook_errors_total")
 }

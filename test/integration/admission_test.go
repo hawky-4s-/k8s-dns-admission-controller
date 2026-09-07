@@ -23,10 +23,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/admission"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/config"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/logging"
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/metrics"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/admission"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/config"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/logging"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/metrics"
 )
 
 // TestIntegration_FullAdmissionFlow tests the complete admission flow
@@ -266,10 +266,10 @@ func TestIntegration_ConcurrentAdmissions(t *testing.T) {
 //	┌───────-───┐      ┌──────────┐      ┌──────────────────────────────────┐
 //	│  Send     │─────>│  Webhook │─────>│  Prometheus Metrics              │
 //	│  Request  │      │  Handler │      │                                  │
-//	└──────-────┘      └──────────┘      │  ndots_webhook_mutations_total   │
+//	└──────-────┘      └──────────┘      │  dns_webhook_mutations_total   │
 //	                                     │  ✅ counter incremented          │
 //	                                     │                                  │
-//	                                     │  ndots_webhook_request_          │
+//	                                     │  dns_webhook_request_          │
 //	                                     │  duration_seconds                │
 //	                                     │  ✅ histogram recorded           │
 //	                                     └──────────────────────────────────┘
@@ -317,10 +317,10 @@ func TestIntegration_MetricsRecorded(t *testing.T) {
 	foundMutations := false
 	foundDuration := false
 	for _, mf := range metricFamilies {
-		if mf.GetName() == "ndots_webhook_mutations_total" {
+		if mf.GetName() == "dns_webhook_mutations_total" {
 			foundMutations = true
 		}
-		if mf.GetName() == "ndots_webhook_request_duration_seconds" {
+		if mf.GetName() == "dns_webhook_request_duration_seconds" {
 			foundDuration = true
 		}
 	}

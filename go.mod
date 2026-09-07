@@ -1,4 +1,4 @@
-module github.com/hawky-4s-/k8s-ndots-admission-controller
+module github.com/hawky-4s-/k8s-dns-admission-controller
 
 go 1.26
 

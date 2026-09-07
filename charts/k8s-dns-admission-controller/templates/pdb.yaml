@@ -2,10 +2,10 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "k8s-ndots-admission-controller.fullname" . }}
+  name: {{ include "k8s-dns-admission-controller.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "k8s-ndots-admission-controller.labels" . | nindent 4 }}
+    {{- include "k8s-dns-admission-controller.labels" . | nindent 4 }}
 spec:
   {{- if .Values.podDisruptionBudget.minAvailable }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
@@ -15,5 +15,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "k8s-ndots-admission-controller.selectorLabels" . | nindent 6 }}
+      {{- include "k8s-dns-admission-controller.selectorLabels" . | nindent 6 }}
 {{- end }}

@@ -1,12 +1,12 @@
-# k8s-ndots-admission-controller Helm Chart
+# k8s-dns-admission-controller Helm Chart
 
-A Helm chart for deploying the k8s-ndots-admission-controller mutating admission controller.
+A Helm chart for deploying the k8s-dns-admission-controller mutating admission controller.
 
 ## Installation
 
 ```bash
 helm upgrade --install ndots . \
-  --namespace ndots-system \
+  --namespace dns-system \
   --create-namespace
 ```
 
@@ -14,7 +14,7 @@ helm upgrade --install ndots . \
 
 | Key | Description | Default |
 |-----|-------------|---------|
-| `image.repository` | Image repository | `hawky4s/k8s-ndots-admission-controller` |
+| `image.repository` | Image repository | `hawky4s/k8s-dns-admission-controller` |
 | `image.tag` | Image tag | `""` (chart appVersion) |
 | `dns.strategy` | How managed DNS settings combine with the pod's (`merge`, `update`, `unset`, `override`) | `merge` |
 | `dns.annotationMode` | Mutation gate (`always`, `opt-in`, `opt-out`) | `opt-out` |
@@ -38,7 +38,7 @@ Manage it like any other option:
 
 ```bash
 helm upgrade --install ndots . \
-  --namespace ndots-system --create-namespace \
+  --namespace dns-system --create-namespace \
   --set 'dns.options[0].name=ndots' \
   --set 'dns.options[0].value=2'
 ```

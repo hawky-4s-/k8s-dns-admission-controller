@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/config"
+	"github.com/hawky-4s-/k8s-dns-admission-controller/internal/config"
 )
 
 func strPtr(s string) *string { return &s }

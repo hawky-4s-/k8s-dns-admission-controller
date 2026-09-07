@@ -1,15 +1,15 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: {{ include "k8s-ndots-admission-controller.fullname" . }}
+  name: {{ include "k8s-dns-admission-controller.fullname" . }}
   labels:
-    {{- include "k8s-ndots-admission-controller.labels" . | nindent 4 }}
+    {{- include "k8s-dns-admission-controller.labels" . | nindent 4 }}
   annotations:
     {{- with .Values.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
     {{- if .Values.tls.useCertManager }}
-    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "k8s-ndots-admission-controller.fullname" . }}
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "k8s-dns-admission-controller.fullname" . }}
     {{- end }}
 webhooks:
   - name: ndots.admission.k8s.io
@@ -21,7 +21,7 @@ webhooks:
     timeoutSeconds: {{ .Values.webhook.timeoutSeconds }}
     clientConfig:
       service:
-        name: {{ include "k8s-ndots-admission-controller.fullname" . }}
+        name: {{ include "k8s-dns-admission-controller.fullname" . }}
         namespace: {{ .Release.Namespace }}
         path: /mutate
         port: {{ .Values.service.port }}

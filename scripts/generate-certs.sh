@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-SERVICE=${1:-k8s-ndots-admission-controller.default.svc}
+SERVICE=${1:-k8s-dns-admission-controller.default.svc}
 DIR=${2:-certs}
 
 command -v openssl >/dev/null 2>&1 || { echo >&2 "openssl is required but not installed. Aborting."; exit 1; }

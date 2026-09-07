@@ -84,7 +84,7 @@ import (
     "os/signal"
     "syscall"
     
-    "github.com/<org>/k8s-ndots-admission-controller/internal/server"
+    "github.com/<org>/k8s-dns-admission-controller/internal/server"
 )
 
 func main() {

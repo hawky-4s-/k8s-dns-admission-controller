@@ -18,4 +18,4 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/hawky-4s-/k8s-ndots-admission-controller
+        - github.com/hawky-4s-/k8s-dns-admission-controller

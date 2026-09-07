@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	namespace = "ndots_webhook"
+	namespace = "dns_webhook"
 )
 
 // Recorder records webhook metrics to Prometheus.

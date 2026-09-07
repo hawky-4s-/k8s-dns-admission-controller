@@ -46,16 +46,16 @@ func printControllerLogs() {
 		return
 	}
 	ctx := context.Background()
-	pods, err := clientset.CoreV1().Pods("ndots-system").List(ctx, metav1.ListOptions{})
+	pods, err := clientset.CoreV1().Pods("dns-system").List(ctx, metav1.ListOptions{})
 	if err != nil {
-		fmt.Printf("Failed to list pods in ndots-system: %v\n", err)
+		fmt.Printf("Failed to list pods in dns-system: %v\n", err)
 		return
 	}
 
 	fmt.Println("=== ndots-admission-controller logs ===")
 	for _, pod := range pods.Items {
 		fmt.Printf("--- Pod: %s ---\n", pod.Name)
-		req := clientset.CoreV1().Pods("ndots-system").GetLogs(pod.Name, &corev1.PodLogOptions{})
+		req := clientset.CoreV1().Pods("dns-system").GetLogs(pod.Name, &corev1.PodLogOptions{})
 		podLogs, err := req.Stream(ctx)
 		if err != nil {
 			fmt.Printf("Failed to open stream for pod %s: %v\n", pod.Name, err)
@@ -440,7 +440,7 @@ func TestE2E_NamespaceExclusion(t *testing.T) {
 	ctx := context.Background()
 
 	// Get the MutatingWebhookConfiguration
-	_, err := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, "k8s-ndots-admission-controller", metav1.GetOptions{})
+	_, err := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, "k8s-dns-admission-controller", metav1.GetOptions{})
 	if err != nil {
 		// Try to list if specific name failed (chart might name it differently)
 		list, listErr := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations().List(ctx, metav1.ListOptions{})
@@ -452,16 +452,16 @@ func TestE2E_NamespaceExclusion(t *testing.T) {
 		}
 		t.Logf("Found %d webhook configurations", len(list.Items))
 	} else {
-		t.Log("Verified MutatingWebhookConfiguration 'k8s-ndots-admission-controller' exists")
+		t.Log("Verified MutatingWebhookConfiguration 'k8s-dns-admission-controller' exists")
 	}
 
 	t.Log("Verified MutatingWebhookConfiguration exists")
 
-	// Additionally verify that the ndots-system namespace is excluded
-	pods, _ := clientset.CoreV1().Pods("ndots-system").List(ctx, metav1.ListOptions{})
+	// Additionally verify that the dns-system namespace is excluded
+	pods, _ := clientset.CoreV1().Pods("dns-system").List(ctx, metav1.ListOptions{})
 	if len(pods.Items) > 0 {
 		for _, pod := range pods.Items {
-			// Webhook pods in ndots-system should not have been mutated by themselves
+			// Webhook pods in dns-system should not have been mutated by themselves
 			t.Logf("Found webhook pod: %s", pod.Name)
 		}
 	}
@@ -473,7 +473,7 @@ func TestE2E_NamespaceExclusion(t *testing.T) {
 //
 //	┌───────────────────────┐      ┌─────────────────────────────┐
 //	│  ndots-admission-ctrl │─────>│  stdout logs                │
-//	│  pods in ndots-system │      │                             │
+//	│  pods in dns-system │      │                             │
 //	└───────────────────────┘      │  {"LEVEL":"DEBUG", ...}     │
 //	                               │      or                     │
 //	 LOG_LEVEL=debug               │  LEVEL=DEBUG ...            │
@@ -485,14 +485,14 @@ func TestE2E_DebugLogs(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	pods, err := clientset.CoreV1().Pods("ndots-system").List(ctx, metav1.ListOptions{})
+	pods, err := clientset.CoreV1().Pods("dns-system").List(ctx, metav1.ListOptions{})
 	if err != nil {
-		t.Fatalf("Failed to list pods in ndots-system: %v", err)
+		t.Fatalf("Failed to list pods in dns-system: %v", err)
 	}
 
 	foundDebugLog := false
 	for _, pod := range pods.Items {
-		req := clientset.CoreV1().Pods("ndots-system").GetLogs(pod.Name, &corev1.PodLogOptions{})
+		req := clientset.CoreV1().Pods("dns-system").GetLogs(pod.Name, &corev1.PodLogOptions{})
 		podLogs, err := req.Stream(ctx)
 		if err != nil {
 			t.Logf("Failed to open stream for pod %s: %v", pod.Name, err)
