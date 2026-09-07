@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"testing"
 
-	jsonpatch "gopkg.in/evanphx/json-patch.v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	jsonpatch "gopkg.in/evanphx/json-patch.v4"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/hawky-4s-/k8s-ndots-admission-controller/internal/config"
