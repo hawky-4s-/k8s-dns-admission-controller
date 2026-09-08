@@ -1,9 +1,12 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, semver without 'v' prefix (e.g. 2.1.0)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -14,24 +17,57 @@ permissions:
   attestations: write
 
 jobs:
+  # Run the full CI suite against main HEAD before anything is built, pushed, or
+  # tagged. The Chart.yaml bump that happens later is metadata-only and does not
+  # affect the Go tests or the image contents, so testing pre-bump is valid.
   ci:
     uses: ./.github/workflows/ci.yaml
     secrets: inherit
 
-  build-and-push:
-    name: Build and Push
+  release:
+    name: Release
     runs-on: ubuntu-latest
     needs: ci
     permissions:
-      contents: read
+      contents: write
       packages: write
       id-token: write
       attestations: write
-    outputs:
-      image: ${{ steps.meta.outputs.tags }}
-      digest: ${{ steps.build.outputs.digest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      # Fail fast on anything that isn't bare semver (e.g. a leading "v").
+      - name: Validate version input
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'; then
+            echo "::error::version '$VERSION' is not bare semver (e.g. 2.1.0, no 'v' prefix)"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          # Derive the major.minor moving tag (e.g. 2.1) from the core version,
+          # ignoring any prerelease/build metadata.
+          echo "VERSION_MAJOR_MINOR=$(printf '%s' "$VERSION" | sed -E 's/^([0-9]+\.[0-9]+).*/\1/')" >> "$GITHUB_ENV"
+
+      # Bump the chart's version + appVersion and commit LOCALLY. Nothing is
+      # pushed until the image is safely in the registry (see push-back step).
+      # The image tag defaults to .Chart.AppVersion in the chart, so keeping
+      # appVersion == the released image tag is required.
+      - name: Bump Chart.yaml (local commit, not pushed)
+        env:
+          CHART: charts/k8s-dns-admission-controller/Chart.yaml
+        run: |
+          sed -i -E "s/^version: .*/version: ${VERSION}/" "$CHART"
+          sed -i -E "s/^appVersion: .*/appVersion: \"${VERSION}\"/" "$CHART"
+          echo "--- bumped $CHART ---"
+          grep -E '^(version|appVersion):' "$CHART"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore(release): v${VERSION}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
@@ -45,6 +81,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # The image tag comes straight from the validated input. We deliberately do
+      # NOT use docker/metadata-action's type=semver here, since the git tag does
+      # not exist yet at this point in the flow.
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
@@ -52,9 +91,8 @@ jobs:
           images: |
             ${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
+            type=raw,value=${{ env.VERSION }}
+            type=raw,value=${{ env.VERSION_MAJOR_MINOR }}
 
       - name: Build and push
         id: build
@@ -92,8 +130,6 @@ jobs:
       # actions/attest is the unified attestation action. attest-sbom and
       # attest-build-provenance (v4+) are wrappers around it; calling attest
       # directly removes the wrapper layer.
-      # Mode is auto-detected: providing sbom-path -> SBOM mode; no
-      # sbom-path/predicate inputs -> SLSA build provenance mode.
       - name: Attest SBOM
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
@@ -109,28 +145,18 @@ jobs:
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
 
-      - name: Upload SBOM artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: sbom
-          path: sbom.spdx.json
-
-  create-release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Download SBOM
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: sbom
-          path: ./release-assets
+      # The image is now in the registry. Only NOW do we advertise the release by
+      # pushing the bump commit to main and the v<version> tag on top of it. If the
+      # workflow fails before this step, main and tags are untouched.
+      #
+      # Note on re-runs: if the workflow dies AFTER this step, the image and tag
+      # already exist; re-running with the same version overwrites the image and
+      # the push below no-ops or fast-forwards. Bump the version for a clean retry.
+      - name: Push commit and tag
+        run: |
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          git push origin HEAD:main
+          git push origin "v${VERSION}"
 
       - name: Generate Changelog
         id: changelog
@@ -141,20 +167,34 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
+          tag_name: v${{ env.VERSION }}
           body: |
             ${{ steps.changelog.outputs.changelog }}
 
             ## Image
 
-            `${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller@${{ needs.build-and-push.outputs.digest }}`
+            `${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller@${{ steps.build.outputs.digest }}`
 
             Verify the signature:
 
             ```sh
-            cosign verify ${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller@${{ needs.build-and-push.outputs.digest }} \
+            cosign verify ${{ secrets.DOCKERHUB_USERNAME }}/k8s-dns-admission-controller@${{ steps.build.outputs.digest }} \
               --certificate-identity-regexp 'https://github.com/${{ github.repository }}/.+' \
               --certificate-oidc-issuer 'https://token.actions.githubusercontent.com'
             ```
-          files: ./release-assets/sbom.spdx.json
+          files: sbom.spdx.json
           prerelease: false
           generate_release_notes: true
+
+      # Publish the chart LAST. The bumped Chart.yaml is already in this job's
+      # working tree (committed above and pushed to main), so chart-releaser
+      # packages the correct version and publishes it to the gh-pages branch.
+      - name: Set up Helm
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+
+      - name: Release chart
+        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
+        with:
+          charts_dir: charts
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
