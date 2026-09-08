@@ -327,14 +327,24 @@ Steps:
 
 #### Release Workflow (`.github/workflows/release.yaml`)
 
-Triggered on: tag push (v*)
+Triggered manually via `workflow_dispatch` with a `version` input (bare semver,
+e.g. `2.1.0` — no `v` prefix). The workflow creates the tag; you do not tag
+locally.
 
-Steps:
-1. Run full CI
-2. Build multi-arch container images (amd64, arm64)
-3. Push to container registry
-4. Create GitHub release with changelog
-5. Generate Helm chart (if applicable)
+Steps (single atomic flow):
+1. Run full CI against `main` HEAD (pre-bump).
+2. Bump `Chart.yaml` `version` + `appVersion` to the input, commit locally
+   (unpushed). `appVersion` is the chart's default image tag, so it must match the
+   released image.
+3. Build + push the multi-arch image (amd64, arm64) tagged `<version>`; sign
+   (cosign), generate SBOM, attest.
+4. **Only after** the image push succeeds: push the bump commit to `main` and push
+   the annotated tag `v<version>`.
+5. Create the GitHub Release `v<version>` with changelog.
+6. Publish the Helm chart to the `gh-pages` branch via `chart-releaser`.
+
+Chart publishing is folded into this workflow; there is no separate
+chart-release trigger.
 
 ### Required Secrets
 
