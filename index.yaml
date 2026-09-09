@@ -1,2 +1,27 @@
 apiVersion: v1
-entries: {}
+entries:
+  k8s-dns-admission-controller:
+  - apiVersion: v2
+    appVersion: 2.0.1
+    created: "2026-09-09T09:59:36.109398042Z"
+    description: A Helm chart for deploying the DNS Kubernetes Mutating Admission
+      Webhook
+    digest: 4d807ddea13dc2aa5e313ae01726e4c6f62c0f39d4d40a6df9953cfaf759fa24
+    home: https://github.com/hawky-4s-/k8s-dns-admission-controller
+    keywords:
+    - kubernetes
+    - admission-controller
+    - webhook
+    - dns
+    - ndots
+    maintainers:
+    - name: hawky-4s-
+      url: https://github.com/hawky-4s-
+    name: k8s-dns-admission-controller
+    sources:
+    - https://github.com/hawky-4s-/k8s-dns-admission-controller
+    type: application
+    urls:
+    - https://github.com/hawky-4s-/k8s-dns-admission-controller/releases/download/k8s-dns-admission-controller-2.0.1/k8s-dns-admission-controller-2.0.1.tgz
+    version: 2.0.1
+generated: "2026-09-09T09:59:36.109403853Z"
